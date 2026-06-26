@@ -22,6 +22,8 @@ allows detailed queries.
 - Central FastAPI backend managing reasons and events.
 - InfluxDB for event storage.
 - Recent-logins display in the overlay and via a CLI tool.
+- Central distribution of a branding logo: the API serves a logo image that
+  the overlay displays, so branding is managed centrally and updated in one place.
 - Task Manager lock-down while the overlay is open.
 
 **Non-goals:**
@@ -53,7 +55,7 @@ on client machines.
 | Component | Purpose | Stack |
 |---|---|---|
 | `loginlogbook-client` | PyQt6 fullscreen overlay on each server. Shows login form, reasons, recent logins. Locks Task Manager. | Python + PyQt6 |
-| `loginlogbook-api` | Central backend. Manages reasons (CRUD), ingests login/logout events, serves recent logins. Only component with InfluxDB access. | Python + FastAPI, Docker |
+| `loginlogbook-api` | Central backend. Manages reasons (CRUD), distributes the branding logo, ingests login/logout events, serves recent logins. Only component with InfluxDB access. | Python + FastAPI, Docker |
 | `loginlogbook-cli` | Terminal tool (`loginlog show`) for detailed recent-login queries per host. | Python (Typer) |
 | InfluxDB | Time-series store for events. Set up via docker-compose alongside the API. | InfluxDB 2.x, Docker |
 
@@ -78,6 +80,8 @@ contract below is what clients depend on.
 | `GET` | `/reasons` | List active login reasons. |
 | `POST` | `/reasons` | Create a reason (admin). |
 | `DELETE` | `/reasons/{id}` | Deactivate/remove a reason (admin). |
+| `GET` | `/branding/logo` | Fetch the current branding logo image. Supports caching (ETag / Last-Modified). |
+| `PUT` | `/branding/logo` | Upload/replace the branding logo (admin). |
 | `POST` | `/events` | Record a login or logout event. Body: `{event_type, host, os_user, reason?, timestamp}`. |
 | `GET` | `/events/recent` | Recent events. Query: `host`, `limit`, optional `event_type`. |
 | `GET` | `/health` | Liveness/readiness, including InfluxDB reachability. |
@@ -125,6 +129,9 @@ local user. This is an accepted boundary, not a defect.
 ## 8. Offline Behaviour & Error Handling
 
 - **Reasons unreachable:** use the last successfully fetched list from local cache.
+- **Logo unreachable:** use the last cached logo image; if none cached yet,
+  fall back to a bundled default logo. The client uses ETag / Last-Modified to
+  avoid re-downloading an unchanged logo.
 - **Event POST fails:** event is written to a local file-backed queue and
   retried on next successful contact. **The login flow is never blocked** —
   the desktop is released regardless.
@@ -153,5 +160,7 @@ inability to reach the server must not prevent a user from working.
 ## 11. Open Questions / Deferred Decisions
 
 - Reasons persistence: JSON file vs. InfluxDB measurement (decide in plan).
+- Logo storage on the API side (file on a mounted volume vs. object store) and
+  accepted image formats/size limits (decide in plan).
 - Exact OS-logoff hook mechanism per platform (decide in plan).
 - Packaging tool for the client (PyInstaller vs. alternatives) — decide in plan.
