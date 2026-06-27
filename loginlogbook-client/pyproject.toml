@@ -1,0 +1,29 @@
+[project]
+name = "loginlogbook-client"
+version = "0.1.0"
+description = "LoginLogBook fullscreen login overlay for Windows and Linux."
+requires-python = ">=3.12"
+dependencies = [
+    "PyQt6>=6.7",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-qt>=4.4",
+]
+linux = [
+    "python-xlib>=0.33",
+]
+package = [
+    "pyinstaller>=6.0",
+]
+
+[project.scripts]
+loginlogbook-client = "app.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
