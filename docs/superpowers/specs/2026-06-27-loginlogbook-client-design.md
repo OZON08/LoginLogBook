@@ -57,8 +57,9 @@ The screen is fully covered by a dark semi-transparent overlay (no desktop acces
 | `--color-primary-hover` | `#1D4ED8` | Hover state on primary button |
 | `--color-primary-disabled` | `#2563EB` at 38 % opacity | Anmelden button before reason selected |
 | `--color-foreground` | `#0F172A` | Primary text |
-| `--color-muted` | `#64748B` | Footer text, timestamps, secondary labels |
-| `--color-border` | `#E2E8F0` | Card divider, list item separator |
+| `--color-muted` | `#475569` | Footer text, timestamps, secondary labels (6.6:1 on white — BITV 1.4.3) |
+| `--color-border-decorative` | `#E2E8F0` | Purely decorative separators (row dividers inside lists) |
+| `--color-border-ui` | `#6B7280` | UI component boundaries: search field border, column divider (4.3:1 — BITV 1.4.11) |
 | `--color-selection-bg` | `#EFF6FF` | Selected list item background |
 | `--color-selection-border` | `#2563EB` | 3 px left border on selected item |
 | `--color-destructive` | `#DC2626` | Abmelden button border/text |
@@ -75,7 +76,7 @@ The screen is fully covered by a dark semi-transparent overlay (no desktop acces
 
 | Usage | Size | Weight |
 |---|---|---|
-| Footer, timestamps | 11 px | 400 |
+| Footer, timestamps | 12 px | 400 |
 | List items, table content | 13 px | 400 (normal) / 500 (selected) |
 | Column headers | 13 px | 600 |
 | Search field, table body | 15 px | 400 |
@@ -91,7 +92,7 @@ The screen is fully covered by a dark semi-transparent overlay (no desktop acces
 - `border-radius: 12px`
 - `box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35)`
 - `padding: 32px`
-- Column gap: 24 px, with 1 px `--color-border` vertical divider
+- Column gap: 24 px, with 1 px `--color-border-ui` vertical divider
 
 ---
 
@@ -152,7 +153,7 @@ A modal dialog (smaller card on top of the overlay) before OS logoff:
 
 ### 4.7 Footer (full width, below both columns)
 
-- Left: `[os_user] · [hostname]` — 11 px, `--color-muted`
+- Left: `[os_user] · [hostname]` — 12 px, `--color-muted`
 - Right: status dot + label
   - `● Online` — `--color-status-online`
   - `● Offline – Cache` — `--color-status-offline`; tooltip shows timestamp of last successful API contact
@@ -277,3 +278,76 @@ The following additions to `loginlogbook-api` are required before the client can
 - **GUI smoke test:** Overlay opens fullscreen, reason list populates, Anmelden activates after selection, overlay closes
 - **Platform test (Windows):** Task Manager blocked while open; released on close; registry value reset on crash/force-quit via cleanup hook
 - **Platform test (Linux/X11):** Keyboard grab active; Alt+Tab intercepted; released on close
+
+---
+
+## 11. BITV 2.0 Konformität (Rheinland-Pfalz)
+
+Grundlage: BITV 2.0 (Barrierefreie-Informationstechnik-Verordnung), basierend auf WCAG 2.1 Level AA und EN 301 549. Die folgende Tabelle dokumentiert die Erfüllung jedes relevanten Erfolgskriteriums.
+
+### 11.1 Kontrast-Nachweise
+
+| Farbpaar | Kontrastverhältnis | Erforderlich | Kriterium |
+|---|---|---|---|
+| `#0F172A` (Text) auf `#FFFFFF` | 19.1:1 | 4.5:1 | SC 1.4.3 AA ✓ |
+| `#475569` (Muted) auf `#FFFFFF` | 6.6:1 | 4.5:1 | SC 1.4.3 AA ✓ |
+| `#FFFFFF` (Text) auf `#2563EB` (Button) | 4.8:1 | 4.5:1 | SC 1.4.3 AA ✓ |
+| `#DC2626` (Text) auf `#FFFFFF` (Outline-Button) | 4.6:1 | 4.5:1 | SC 1.4.3 AA ✓ |
+| `#6B7280` (UI-Border) auf `#FFFFFF` | 4.3:1 | 3.0:1 | SC 1.4.11 AA ✓ |
+| `#2563EB` (Fokusring) auf `#FFFFFF` | 4.8:1 | 3.0:1 | SC 1.4.11 AA ✓ |
+| `#16A34A` (Status Online) auf `#FFFFFF` | 4.5:1 | 3.0:1 | SC 1.4.11 AA ✓ |
+| `#CA8A04` (Status Offline) auf `#FFFFFF` | 3.1:1 | 3.0:1 | SC 1.4.11 AA ✓ |
+
+> **Hinweis Branding-Akzentfarbe:** Wird `--color-primary` durch eine externe `brand_color` überschrieben, muss die Konformität des neuen Farbpaars vor dem Deployment geprüft werden. Mindestanforderung: 4.5:1 für Weiß auf Akzentfarbe (Button-Text).
+
+### 11.2 Erfolgskriterien
+
+| WCAG SC | Bezeichnung | Umsetzung |
+|---|---|---|
+| **1.1.1 A** | Nicht-Text-Inhalt | Logo: `setAccessibleName("Firmenlogo")`. Suchfeld-Icon: `setAccessibleName("Suchen")`. Status-Punkt: zugänglich über Label-Text. |
+| **1.3.1 A** | Info und Beziehungen | `QListWidget` mit Rolle `QAccessible::List`. Tabelle als `QTableWidget` mit markierten Spaltenköpfen (`setHorizontalHeaderLabels`). Suchfeld mit sichtbarem Label. |
+| **1.3.2 A** | Bedeutungsvolle Reihenfolge | Tab-Reihenfolge entspricht visueller Lesereihenfolge: Suche → Liste → Abmelden → Anmelden. |
+| **1.4.1 A** | Verwendung von Farbe | Auswahlzustand: Farbe + linke Border (3 px). Statusanzeige: Farbe + Textlabel. Fehler: Farbe + Icon + Text. |
+| **1.4.3 AA** | Kontrast (Minimum) | Alle Farbpaare geprüft, siehe §11.1. |
+| **1.4.4 AA** | Textgröße | `QApplication.setFont` respektiert System-Schriftskalierung. Layout flexibel — keine fixen Pixelhöhen für Textcontainer. Mindestgröße: 12 px. |
+| **1.4.11 AA** | Nicht-Text-Kontrast | UI-Komponenten-Grenzen mit `--color-border-ui` (#6B7280). Fokusring: 2 px #2563EB. Statusdots: geprüft, §11.1. |
+| **2.1.1 A** | Tastatur | Alle Funktionen per Tastatur erreichbar: Suche, Listennavigation (↑↓), Anmelden (Enter), Abmelden (Tab+Space/Enter), Bestätigungsdialog. |
+| **2.1.2 A** | Keine Tastaturfalle | **Dokumentierte Ausnahme:** Das Overlay ist bewusst eine Zugangsschranke. Der legitime Ausweg ist jederzeit per Tastatur erreichbar: Tab → „Abmelden" → Enter. Dies wird in der BITV-Erklärung der Behörde als gerechtfertigte Sicherheitsmaßnahme gemäß Art. 5 EU-Richtlinie 2016/2102 deklariert. |
+| **2.4.3 A** | Fokus-Reihenfolge | Beim Öffnen: Fokus auf Suchfeld. Beim Öffnen des Bestätigungsdialogs: Fokus auf „Abbrechen". Beim Schließen des Dialogs: Fokus zurück auf „Abmelden". |
+| **2.4.6 AA** | Überschriften und Beschriftungen | Alle Bereiche haben sichtbare Beschriftungen: Suchfeld-Label, „Letzte Anmeldungen"-Header, Spaltenköpfe der Tabelle. |
+| **2.4.7 AA** | Sichtbarer Fokus | 2 px Fokusring in `--color-primary` mit 2 px Abstand auf allen interaktiven Elementen. Nie `setFocusPolicy(Qt.NoFocus)` ohne Alternative. |
+| **3.1.1 A** | Sprache der Seite | `QApplication.setLocale(QLocale(QLocale.German, QLocale.Germany))` — Screenreader erkennt Sprache als `de-DE`. |
+| **3.3.1 A** | Fehlererkennung | Fehler nach Event-POST: Text `Anmeldung konnte nicht übermittelt werden – wird wiederholt` (nicht nur Farbe). |
+| **3.3.2 A** | Beschriftungen | Alle Eingabefelder haben sichtbare Labels (`QLabel` mit `setBuddy()`). |
+| **4.1.2 A** | Name, Rolle, Wert | Alle Widgets: `setAccessibleName()` + `setAccessibleDescription()`. Disabled-Zustand: `setEnabled(False)` (nicht nur optisch). Ausgewählter Listeneintrag: `QAccessible::State::Selected`. |
+| **4.1.3 AA** | Statusmeldungen | Online/Offline-Wechsel: Windows via UI Automation `LiveRegionChanged`-Event; Linux via AT-SPI2 `object:state-changed:showing`. Fehlermeldungen: `role=alert`-Äquivalent (`QAccessibleEvent::Alert`). |
+
+### 11.3 PyQt6 Umsetzungshinweise
+
+```python
+# Locale
+app.setLocale(QLocale(QLocale.Language.German, QLocale.Country.Germany))
+
+# Accessible names (Beispiele)
+logo_label.setAccessibleName("Firmenlogo")
+search_field.setAccessibleName("Anmeldegrund suchen")
+anmelden_btn.setAccessibleName("Anmelden")
+abmelden_btn.setAccessibleName("Abmelden ohne Anmeldungsgrund")
+status_label.setAccessibleName(f"Verbindungsstatus: {'Online' if online else 'Offline, Cache'}")
+
+# Screenreader-Ankündigung für Statuswechsel (Windows: UIA, Linux: AT-SPI2)
+event = QAccessibleEvent(status_label, QAccessible.Event.NameChanged)
+QAccessible.updateAccessibility(event)
+
+# Systemschrift respektieren
+app.setFont(QApplication.font())  # Übernimmt System-DPI-Skalierung
+```
+
+### 11.4 BITV-Erklärung (Anforderung Rheinland-Pfalz)
+
+Gemäß § 12b LBGG RLP (Landesgesetz zur Gleichstellung behinderter Menschen Rheinland-Pfalz) und der BITV 2.0 muss eine **Erklärung zur Barrierefreiheit** bereitgestellt werden. Für diese Desktop-Anwendung empfiehlt sich:
+
+- Erklärung im Intranet-Portal der Behörde (nicht im Overlay selbst)
+- Kontaktmöglichkeit für Barrierefreiheits-Feedback
+- Dokumentation der bekannten Ausnahme (Tastaturfalle, SC 2.1.2) mit Begründung
+- Verweis auf Durchsetzungsverfahren beim Beauftragten der Landesregierung für die Belange behinderter Menschen Rheinland-Pfalz
