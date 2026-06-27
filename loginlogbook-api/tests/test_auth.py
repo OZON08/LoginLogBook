@@ -25,13 +25,13 @@ def _app_with_protected_routes() -> FastAPI:
 
 def test_admin_route_rejects_missing_token():
     client = TestClient(_app_with_protected_routes())
-    assert client.get("/admin-only").status_code == 401
+    assert client.get("/admin-only").status_code == 403
 
 
 def test_admin_route_rejects_wrong_token():
     client = TestClient(_app_with_protected_routes())
     resp = client.get("/admin-only", headers={"X-Admin-Token": "nope"})
-    assert resp.status_code == 401
+    assert resp.status_code == 403
 
 
 def test_admin_route_accepts_correct_token():
