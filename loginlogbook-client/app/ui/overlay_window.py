@@ -1,0 +1,190 @@
+"""Main fullscreen overlay window — wires all widgets and handles data flow."""
+import getpass
+import socket
+from datetime import datetime, timezone
+
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtGui import QColor, QPainter
+from PyQt6.QtWidgets import QMainWindow, QWidget
+
+from app.api_client import ApiClient
+from app.cache import CacheStore
+from app.config import Settings
+from app.event_queue import EventQueue
+from app.models import AppConfig, EventIn, EventOut, Reason
+from app.ui.card_widget import CardWidget
+from app.ui.confirm_dialog import ConfirmDialog
+from app.ui.styles import COLORS, STYLESHEET
+
+
+class _DataLoader(QThread):
+    """Background thread: loads logo, reasons, config, and recent events from API."""
+
+    reasons_loaded = pyqtSignal(list)        # list[Reason]
+    logo_loaded = pyqtSignal(bytes, str)     # data, content_type
+    config_loaded = pyqtSignal(object)       # AppConfig
+    events_loaded = pyqtSignal(list)         # list[EventOut]
+    finished_online = pyqtSignal()
+    finished_offline = pyqtSignal()
+
+    def __init__(self, client: ApiClient, host: str, days: int) -> None:
+        super().__init__()
+        self._client = client
+        self._host = host
+        self._days = days
+
+    def run(self) -> None:
+        online = True
+        try:
+            reasons = self._client.get_reasons()
+            self.reasons_loaded.emit(reasons)
+        except Exception:
+            online = False
+
+        try:
+            logo_data, logo_ct = self._client.get_logo()
+            self.logo_loaded.emit(logo_data, logo_ct)
+        except Exception:
+            pass
+
+        try:
+            cfg = self._client.get_config()
+            self.config_loaded.emit(cfg)
+        except Exception:
+            pass
+
+        try:
+            events = self._client.get_recent_events(self._host, self._days)
+            self.events_loaded.emit(events)
+        except Exception:
+            pass
+
+        if online:
+            self.finished_online.emit()
+        else:
+            self.finished_offline.emit()
+
+
+class OverlayWindow(QMainWindow):
+    login_completed = pyqtSignal()
+
+    def __init__(self, settings: Settings) -> None:
+        super().__init__()
+        self._settings = settings
+        self._cache = CacheStore(settings.cache_dir)
+        self._queue = EventQueue(settings.queue_file)
+        self._client = ApiClient(settings)
+        self._host = socket.gethostname()
+        self._os_user = getpass.getuser()
+        self._recent_days = 7
+        self._loader: _DataLoader | None = None
+
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet(STYLESHEET)
+
+        self._card = CardWidget(self)
+        self._card.footer.set_user_host(self._os_user, self._host)
+
+        # Wire signals
+        self._card.search.filter_changed.connect(self._card.reason_list.apply_filter)
+        self._card.reason_list.selection_changed.connect(
+            self._card.button_row.set_selected_reason
+        )
+        self._card.button_row.anmelden_clicked.connect(self._on_anmelden)
+        self._card.button_row.abmelden_clicked.connect(self._on_abmelden)
+
+        # Load from cache immediately
+        self._populate_from_cache()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self._center_card()
+        self._start_loading()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._center_card()
+
+    def paintEvent(self, event) -> None:
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor(15, 23, 42, 224))
+
+    def _center_card(self) -> None:
+        cw, ch = self._card.width(), self._card.sizeHint().height()
+        x = (self.width() - cw) // 2
+        y = (self.height() - ch) // 2
+        self._card.move(x, max(y, 32))
+
+    def _populate_from_cache(self) -> None:
+        if reasons := self._cache.load_reasons():
+            self._card.reason_list.populate(reasons)
+            self._card.logo.set_loading(False)
+        if logo := self._cache.load_logo():
+            self._card.logo.set_logo(*logo)
+        if cfg := self._cache.load_config():
+            self._recent_days = cfg.recent_days
+        if events := self._cache.load_recent_events():
+            self._card.recent_table.populate(events, self._recent_days)
+        self._card.footer.set_status(online=False)
+        self._card.search.set_focus()
+
+    def _start_loading(self) -> None:
+        self._loader = _DataLoader(self._client, self._host, self._recent_days)
+        self._loader.reasons_loaded.connect(self._on_reasons)
+        self._loader.logo_loaded.connect(self._on_logo)
+        self._loader.config_loaded.connect(self._on_config)
+        self._loader.events_loaded.connect(self._on_events)
+        self._loader.finished_online.connect(
+            lambda: self._card.footer.set_status(online=True)
+        )
+        self._loader.finished_offline.connect(
+            lambda: self._card.footer.set_status(online=False)
+        )
+        self._loader.start()
+
+    def _on_reasons(self, reasons: list[Reason]) -> None:
+        self._card.reason_list.populate(reasons)
+        self._cache.save_reasons(reasons)
+
+    def _on_logo(self, data: bytes, content_type: str) -> None:
+        self._card.logo.set_logo(data, content_type)
+        self._cache.save_logo(data, content_type)
+
+    def _on_config(self, cfg: AppConfig) -> None:
+        self._recent_days = cfg.recent_days
+        self._cache.save_config(cfg)
+
+    def _on_events(self, events: list[EventOut]) -> None:
+        self._card.recent_table.populate(events, self._recent_days)
+        self._cache.save_recent_events(events)
+
+    def _on_anmelden(self, reason: Reason) -> None:
+        self._card.button_row.set_loading(True)
+        event = EventIn(
+            event_type="login",
+            host=self._host,
+            os_user=self._os_user,
+            reason=reason.label,
+            timestamp=datetime.now(timezone.utc),
+        )
+        try:
+            self._client.post_event(event)
+            self._queue.flush(self._client.post_event)
+        except Exception:
+            self._queue.enqueue(event)
+        # Desktop is always released — never block
+        self.login_completed.emit()
+        self.close()
+
+    def _on_abmelden(self) -> None:
+        dialog = ConfirmDialog(self)
+        if dialog.exec() == ConfirmDialog.DialogCode.Accepted:
+            try:
+                import app.platform_utils as pu  # noqa: PLC0415
+                pu.logoff()
+            except ImportError:
+                pass
