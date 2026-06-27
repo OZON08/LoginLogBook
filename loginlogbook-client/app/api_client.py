@@ -16,7 +16,6 @@ class ApiClient:
         self._base = settings.api_url.rstrip("/")
         self._headers = {"X-Client-Token": settings.client_token}
         self._transport = transport
-        # Custom CA bundle for self-signed internal certs; None = default system trust store.
         self._verify: str | bool = str(settings.api_ca_bundle) if settings.api_ca_bundle else True
 
     def _get(self, path: str, **params) -> httpx.Response:
