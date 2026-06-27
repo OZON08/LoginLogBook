@@ -1,9 +1,6 @@
-"""Search field with debounce and magnifier icon."""
-from PyQt6.QtCore import QRect, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QIcon, QPainter
-from PyQt6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QWidget
-
-from app.ui.styles import COLORS
+"""Search field with debounce and Escape-to-clear."""
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QWidget
 
 
 class SearchField(QWidget):
@@ -26,7 +23,6 @@ class SearchField(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._input)
 
-        # Install key filter for Escape
         self._input.installEventFilter(self)
 
     def eventFilter(self, obj, event) -> bool:

@@ -1,4 +1,4 @@
-"""Filterable list of login reasons with BITV-compliant selection styling."""
+"""Filterable list of login reasons."""
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
