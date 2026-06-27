@@ -56,3 +56,6 @@ Thumbs.db
 
 # InfluxDB local data (if running locally for dev)
 influxdb_data/
+
+# graphify knowledge graph output
+graphify-out/
