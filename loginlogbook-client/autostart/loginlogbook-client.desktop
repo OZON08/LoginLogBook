@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=LoginLogBook
+Exec=/usr/local/bin/loginlogbook-client
+Icon=loginlogbook
+X-GNOME-Autostart-enabled=true
+X-MATE-Autostart-enabled=true
+Hidden=false
+NoDisplay=false
+Comment=Login audit overlay
