@@ -1,7 +1,7 @@
 """Design token colors and Qt stylesheet for the entire overlay."""
 
 COLORS: dict[str, str] = {
-    "overlay_bg": "rgba(15, 23, 42, 224)",   # 0.88 * 255 ≈ 224
+    "overlay_bg": "rgba(15, 23, 42, 224)",
     "card_bg": "#FFFFFF",
     "primary": "#2563EB",
     "primary_hover": "#1D4ED8",
