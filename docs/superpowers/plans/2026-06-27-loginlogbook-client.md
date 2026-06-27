@@ -21,8 +21,9 @@
 - Every user-facing widget must call `setAccessibleName()` (BITV SC 4.1.2).
 - The login flow must **never be blocked** — overlay closes and desktop is released regardless of API success or failure.
 - Platform: Windows 10/11 and Linux X11. Wayland forces XWayland via `QT_QPA_PLATFORM=xcb`.
-- Two API tokens from environment: `CLIENT_TOKEN` (sent as `X-Client-Token` header).
-- API base URL from environment: `API_URL`.
+- `CLIENT_TOKEN` from environment: a **unique token per host machine** (one of the entries from `CLIENT_TOKENS` on the API side), sent as `X-Client-Token` header. Never share one token across multiple machines — revoking it would cut off all of them.
+- `API_URL` from environment: must be `https://…` in production (nginx TLS termination).
+- TLS verification: always enabled. For self-signed internal CA certs, set `API_CA_BUNDLE` env var to the path of the CA certificate file — passed as `httpx.Client(verify=ca_bundle_path)`. Never disable verification entirely (`verify=False` is not an option and is not implemented). Add `api_ca_bundle: Path | None = None` to `Settings`.
 
 ---
 
@@ -385,9 +386,11 @@ class ApiClient:
         self._base = settings.api_url.rstrip("/")
         self._headers = {"X-Client-Token": settings.client_token}
         self._transport = transport
+        # Custom CA bundle for self-signed internal certs; None = default system trust store.
+        self._verify: str | bool = str(settings.api_ca_bundle) if settings.api_ca_bundle else True
 
     def _get(self, path: str, **params) -> httpx.Response:
-        with httpx.Client(transport=self._transport) as c:
+        with httpx.Client(transport=self._transport, verify=self._verify) as c:
             r = c.get(
                 f"{self._base}{path}",
                 headers=self._headers,
@@ -412,7 +415,7 @@ class ApiClient:
         return [EventOut(**e) for e in r.json()]
 
     def post_event(self, event: EventIn) -> None:
-        with httpx.Client(transport=self._transport) as c:
+        with httpx.Client(transport=self._transport, verify=self._verify) as c:
             r = c.post(
                 f"{self._base}/events",
                 headers=self._headers,

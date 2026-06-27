@@ -1661,13 +1661,369 @@ git commit -m "feat(api): add Docker packaging and InfluxDB integration test"
 
 ---
 
+### Task 9: Security hardening — per-host tokens, rate limiting, and HTTPS
+
+**Context for this task:** Three security requirements were added after the initial plan:
+
+1. **Per-host client tokens** — instead of one shared `CLIENT_TOKEN`, the API accepts a list of tokens (one per client machine). Revoking a single compromised host does not affect other clients.
+2. **Rate limiting** — each client token is limited to a sensible request rate to prevent abuse or runaway retry loops.
+3. **HTTPS / TLS** — all traffic between clients and the API is encrypted via an nginx reverse proxy in the same Docker Compose stack.
+
+InfluxDB remains unreachable from outside the Docker network (no port binding to the host). This was already the architecture; the nginx layer makes it explicit and enforced at the transport level.
+
+**Files:**
+- Modify: `loginlogbook-api/app/config.py`
+- Modify: `loginlogbook-api/app/auth.py`
+- Modify: `loginlogbook-api/app/main.py`
+- Modify: `loginlogbook-api/docker-compose.yml`
+- Modify: `loginlogbook-api/.env.example`
+- Create: `loginlogbook-api/nginx/nginx.conf`
+- Create: `loginlogbook-api/nginx/certs/` (placeholder — certs generated at deploy time)
+- Modify: `loginlogbook-api/tests/conftest.py`
+- Modify: `loginlogbook-api/tests/test_auth.py` (already exists from Task 2)
+
+**Interfaces:**
+- Consumes: `app.config.Settings`, `app.auth` module, `app.main.create_app`.
+- Produces:
+  - `Settings.client_tokens: list[str]` — parsed from env var `CLIENT_TOKENS` (comma-separated UUIDs). Falls back to `[CLIENT_TOKEN]` for backward compatibility.
+  - `require_client` now accepts any token from `client_tokens`.
+  - Rate limiter applied as FastAPI middleware: 60 requests/minute per token on client endpoints, 20 requests/minute per IP on admin endpoints.
+  - nginx service in docker-compose handles TLS termination on port 443; API only listens on internal network port 8000.
+
+- [ ] **Step 1: Add `slowapi` to dependencies**
+
+In `loginlogbook-api/pyproject.toml`, add to `dependencies`:
+
+```toml
+"slowapi>=0.1.9",
+```
+
+- [ ] **Step 2: Write failing tests**
+
+In `loginlogbook-api/tests/test_auth.py`, append:
+
+```python
+def test_multiple_client_tokens_both_accepted(configured_client):
+    """Any token from CLIENT_TOKENS is accepted."""
+    # The fixture sets CLIENT_TOKENS to two values; test with the second.
+    second_token = "second-test-token"
+    r = configured_client.get(
+        "/reasons",
+        headers={"X-Client-Token": second_token},
+    )
+    assert r.status_code == 200
+
+
+def test_unknown_client_token_rejected(configured_client):
+    r = configured_client.get(
+        "/reasons",
+        headers={"X-Client-Token": "not-a-known-token"},
+    )
+    assert r.status_code == 403
+```
+
+Create `loginlogbook-api/tests/test_rate_limit.py`:
+
+```python
+"""Tests for rate limiting middleware."""
+from fastapi.testclient import TestClient
+
+from app.main import create_app
+from app.config import Settings
+
+
+def _make_client(tokens: str = "tok") -> TestClient:
+    s = Settings(
+        client_tokens=tokens.split(","),
+        admin_token="admin",
+        influx_url="http://x",
+        influx_token="x",
+        influx_org="x",
+        influx_bucket="x",
+    )
+    app = create_app(s)
+    return TestClient(app, raise_server_exceptions=False)
+
+
+def test_rate_limit_returns_429_after_burst():
+    client = _make_client("tok")
+    headers = {"X-Client-Token": "tok"}
+    responses = [client.get("/reasons", headers=headers) for _ in range(65)]
+    status_codes = [r.status_code for r in responses]
+    assert 429 in status_codes
+```
+
+- [ ] **Step 3: Run to verify failure**
+
+```bash
+pytest tests/test_auth.py::test_multiple_client_tokens_both_accepted \
+       tests/test_auth.py::test_unknown_client_token_rejected \
+       tests/test_rate_limit.py -v
+```
+Expected: FAIL.
+
+- [ ] **Step 4: Update `app/config.py`** — add `client_tokens`
+
+```python
+from pydantic import field_validator
+
+class Settings(BaseSettings):
+    # ... existing fields ...
+
+    # Support multiple per-host client tokens (comma-separated in env)
+    client_tokens: list[str] = []
+
+    # Legacy single-token env var — used as fallback if client_tokens is empty
+    client_token: str = ""
+
+    @field_validator("client_tokens", mode="before")
+    @classmethod
+    def _parse_tokens(cls, v):
+        if isinstance(v, str):
+            return [t.strip() for t in v.split(",") if t.strip()]
+        return v
+
+    def effective_client_tokens(self) -> list[str]:
+        """Returns client_tokens if set, else [client_token] for backward compat."""
+        return self.client_tokens if self.client_tokens else [self.client_token]
+```
+
+Add to `.env.example`:
+
+```
+# Per-host client tokens (comma-separated UUIDs — one per client machine)
+# Generate with: python -c "import uuid; print(uuid.uuid4())"
+CLIENT_TOKENS=<uuid-host1>,<uuid-host2>
+```
+
+- [ ] **Step 5: Update `app/auth.py`** — accept any token from the list
+
+Replace the `require_client` dependency body:
+
+```python
+from fastapi import Depends, Header, HTTPException, status
+from app.config import Settings
+
+
+def require_client(
+    x_client_token: str = Header(...),
+    settings: Settings = Depends(get_settings),
+) -> None:
+    if x_client_token not in settings.effective_client_tokens():
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+```
+
+- [ ] **Step 6: Add rate limiting to `app/main.py`**
+
+```python
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi import Request
+
+
+def _token_or_ip(request: Request) -> str:
+    """Use client token as rate-limit key; fall back to IP."""
+    return request.headers.get("x-client-token") or get_remote_address(request)
+
+
+def create_app(settings: Settings | None = None) -> FastAPI:
+    settings = settings or get_settings()
+    limiter = Limiter(key_func=_token_or_ip, default_limits=["60/minute"])
+    app = FastAPI(title="LoginLogBook API")
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    # ... rest of existing create_app body ...
+    return app
+```
+
+Decorate the client-facing route functions with `@limiter.limit("60/minute")` and admin routes with `@limiter.limit("20/minute")`.
+
+- [ ] **Step 7: Update `tests/conftest.py`** — set two client tokens in the fixture
+
+```python
+@pytest.fixture
+def settings(tmp_path):
+    return Settings(
+        admin_token="test-admin-token",
+        client_tokens=["test-client-token", "second-test-token"],
+        influx_url="http://fake-influx",
+        influx_token="fake",
+        influx_org="test",
+        influx_bucket="test",
+        reasons_file=tmp_path / "reasons.json",
+        logo_dir=tmp_path / "logo",
+    )
+```
+
+- [ ] **Step 8: Run auth and rate-limit tests**
+
+```bash
+pytest tests/test_auth.py tests/test_rate_limit.py -v
+```
+Expected: all tests PASS.
+
+- [ ] **Step 9: Add nginx TLS termination**
+
+Create `loginlogbook-api/nginx/nginx.conf`:
+
+```nginx
+events {}
+
+http {
+    upstream api {
+        server api:8000;
+    }
+
+    # Redirect HTTP → HTTPS
+    server {
+        listen 80;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        ssl_certificate     /etc/nginx/certs/server.crt;
+        ssl_certificate_key /etc/nginx/certs/server.key;
+        ssl_protocols       TLSv1.2 TLSv1.3;
+        ssl_ciphers         HIGH:!aNULL:!MD5;
+
+        # Security headers
+        add_header Strict-Transport-Security "max-age=63072000; includeSubDomains" always;
+        add_header X-Frame-Options DENY always;
+        add_header X-Content-Type-Options nosniff always;
+
+        location / {
+            proxy_pass         http://api;
+            proxy_set_header   Host $host;
+            proxy_set_header   X-Real-IP $remote_addr;
+            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Proto $scheme;
+            client_max_body_size 3m;    # logo upload: 2MB + overhead
+        }
+    }
+}
+```
+
+- [ ] **Step 10: Update `docker-compose.yml`** — add nginx service, remove API port binding from host
+
+```yaml
+services:
+  influxdb:
+    image: influxdb:2.7
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_ADMIN_USER}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_ADMIN_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN}
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - internal          # NOT exposed to host
+
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INFLUX_ORG: ${INFLUX_ORG}
+      INFLUX_BUCKET: ${INFLUX_BUCKET}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      CLIENT_TOKENS: ${CLIENT_TOKENS}
+      REASONS_FILE: /data/reasons.json
+      LOGO_DIR: /data/logo
+    volumes:
+      - api_data:/data
+    networks:
+      - internal          # NOT exposed to host
+    depends_on:
+      - influxdb
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - internal
+    depends_on:
+      - api
+
+volumes:
+  influxdb_data:
+  api_data:
+
+networks:
+  internal:
+    driver: bridge
+```
+
+- [ ] **Step 11: Document cert generation in `.env.example`**
+
+Append to `.env.example`:
+
+```
+# TLS certificates — place server.crt and server.key in nginx/certs/
+# Self-signed (dev/internal):
+#   openssl req -x509 -newkey rsa:4096 -keyout nginx/certs/server.key \
+#     -out nginx/certs/server.crt -sha256 -days 3650 -nodes \
+#     -subj "/CN=loginlogbook.internal"
+# Production: use your internal CA or Let's Encrypt with certbot.
+```
+
+- [ ] **Step 12: Run full test suite**
+
+```bash
+pytest -v
+```
+Expected: all tests PASS.
+
+- [ ] **Step 13: Smoke-test the secured stack**
+
+```bash
+# Generate a self-signed cert for local testing
+mkdir -p nginx/certs
+openssl req -x509 -newkey rsa:4096 -keyout nginx/certs/server.key \
+  -out nginx/certs/server.crt -sha256 -days 365 -nodes \
+  -subj "/CN=localhost"
+
+cp .env.example .env  # fill in tokens
+docker compose up -d --build
+curl -sk https://localhost/health
+```
+Expected: `{"status":"ok","influxdb":"up"}`.
+
+- [ ] **Step 14: Commit**
+
+```bash
+git add loginlogbook-api/app/config.py loginlogbook-api/app/auth.py \
+  loginlogbook-api/app/main.py loginlogbook-api/docker-compose.yml \
+  loginlogbook-api/.env.example loginlogbook-api/nginx/ \
+  loginlogbook-api/tests/test_auth.py loginlogbook-api/tests/test_rate_limit.py \
+  loginlogbook-api/tests/conftest.py loginlogbook-api/pyproject.toml
+git commit -m "feat(api): add per-host tokens, rate limiting, and nginx HTTPS termination"
+```
+
+---
+
 ## Definition of Done (API)
 
 - `pytest -v` passes; the integration test is skipped without `LLB_INTEGRATION=1`.
-- `docker compose up --build` brings up `api` + `influxdb`; `GET /health` returns 200 with `influxdb: up`.
+- `docker compose up --build` brings up `nginx` + `api` + `influxdb`; `GET https://localhost/health` returns 200 with `influxdb: up`.
 - Endpoints implemented and tested: `GET /health`, `GET/POST/DELETE /reasons`, `POST /events`, `GET /events/recent`, `GET/PUT /branding/logo`.
-- Admin endpoints require `X-Admin-Token`; client endpoints require `X-Client-Token`.
+- Admin endpoints require `X-Admin-Token`; client endpoints require any token from `CLIENT_TOKENS`.
+- Rate limiting enforced: 429 returned after >60 requests/minute per client token; >20 requests/minute per IP on admin endpoints.
+- All client↔API traffic is TLS-encrypted via nginx; InfluxDB is not reachable from outside the Docker network.
 - No InfluxDB credentials are needed by, or exposed to, clients — only the API holds them.
+- Each client machine uses its own unique token from `CLIENT_TOKENS`; revoking one token does not affect others.
 
 This API plan establishes the concrete HTTP contract that the client and CLI
 plans (Plan 2 and Plan 3) will consume.
