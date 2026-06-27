@@ -46,3 +46,9 @@ def test_set_loading_disables_both_buttons(row):
     row.set_loading(True)
     assert not row._btn_anmelden.isEnabled()
     assert not row._btn_abmelden.isEnabled()
+
+
+def test_anmelden_stays_disabled_after_loading_clears_without_reason(row):
+    row.set_loading(True)
+    row.set_loading(False)
+    assert not row._btn_anmelden.isEnabled()

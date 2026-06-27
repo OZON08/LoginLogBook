@@ -35,7 +35,7 @@ class ButtonRow(QWidget):
         self._btn_anmelden.setEnabled(reason is not None)
 
     def set_loading(self, loading: bool) -> None:
-        self._btn_anmelden.setEnabled(not loading)
+        self._btn_anmelden.setEnabled(not loading and self._reason is not None)
         self._btn_abmelden.setEnabled(not loading)
         self._btn_anmelden.setText("…" if loading else "Anmelden")
 
