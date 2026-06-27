@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QColor, QPainter
-from PyQt6.QtWidgets import QMainWindow, QWidget
+from PyQt6.QtWidgets import QMainWindow
 
 from app.api_client import ApiClient
 from app.cache import CacheStore
@@ -14,7 +14,7 @@ from app.event_queue import EventQueue
 from app.models import AppConfig, EventIn, EventOut, Reason
 from app.ui.card_widget import CardWidget
 from app.ui.confirm_dialog import ConfirmDialog
-from app.ui.styles import COLORS, STYLESHEET
+from app.ui.styles import STYLESHEET
 
 
 class _DataLoader(QThread):
@@ -89,7 +89,6 @@ class OverlayWindow(QMainWindow):
         self._card = CardWidget(self)
         self._card.footer.set_user_host(self._os_user, self._host)
 
-        # Wire signals
         self._card.search.filter_changed.connect(self._card.reason_list.apply_filter)
         self._card.reason_list.selection_changed.connect(
             self._card.button_row.set_selected_reason
@@ -97,7 +96,6 @@ class OverlayWindow(QMainWindow):
         self._card.button_row.anmelden_clicked.connect(self._on_anmelden)
         self._card.button_row.abmelden_clicked.connect(self._on_abmelden)
 
-        # Load from cache immediately
         self._populate_from_cache()
 
     def showEvent(self, event) -> None:
@@ -133,6 +131,9 @@ class OverlayWindow(QMainWindow):
         self._card.search.set_focus()
 
     def _start_loading(self) -> None:
+        if self._loader is not None and self._loader.isRunning():
+            self._loader.quit()
+            self._loader.wait()
         self._loader = _DataLoader(self._client, self._host, self._recent_days)
         self._loader.reasons_loaded.connect(self._on_reasons)
         self._loader.logo_loaded.connect(self._on_logo)
@@ -173,10 +174,12 @@ class OverlayWindow(QMainWindow):
         )
         try:
             self._client.post_event(event)
-            self._queue.flush(self._client.post_event)
         except Exception:
             self._queue.enqueue(event)
-        # Desktop is always released — never block
+        try:
+            self._queue.flush(self._client.post_event)
+        except Exception:
+            pass
         self.login_completed.emit()
         self.close()
 
