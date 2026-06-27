@@ -1,6 +1,7 @@
 # Claude / AI tooling — never committed
 .claude/
 .superpowers/
+docs/superpowers/
 *.claude-*
 
 # Python
