@@ -10,6 +10,11 @@ from app.models import EventIn, EventOut
 MEASUREMENT = "login_events"
 
 
+def _flux_str(value: str) -> str:
+    """Escape a string value for safe interpolation into a Flux query."""
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def default_client_factory(settings: Settings) -> InfluxDBClient:
     """Create a real InfluxDB client from settings."""
     return InfluxDBClient(
@@ -38,7 +43,7 @@ class InfluxGateway:
             .field("count", 1)
             .time(event.timestamp, WritePrecision.NS)
         )
-        if event.reason is not None:
+        if event.event_type == "login" and event.reason is not None:
             point = point.tag("reason", event.reason)
 
         client = self._client_factory(self._settings)
@@ -53,17 +58,17 @@ class InfluxGateway:
             client.close()
 
     def recent_events(
-        self, host: str, limit: int, event_type: str | None = None
+        self, host: str, limit: int, event_type: str | None = None, days: int = 30
     ) -> list[EventOut]:
         """Return the most recent events for a host, newest first."""
         type_filter = (
-            f' and r.event_type == "{event_type}"' if event_type else ""
+            f' and r.event_type == "{_flux_str(event_type)}"' if event_type else ""
         )
         flux = (
             f'from(bucket: "{self._settings.influx_bucket}")'
-            f" |> range(start: -30d)"
+            f" |> range(start: -{days}d)"
             f' |> filter(fn: (r) => r._measurement == "{MEASUREMENT}"'
-            f' and r.host == "{host}"{type_filter})'
+            f' and r.host == "{_flux_str(host)}"{type_filter})'
             f' |> sort(columns: ["_time"], desc: true)'
             f" |> limit(n: {int(limit)})"
         )

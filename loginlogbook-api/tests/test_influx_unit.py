@@ -17,8 +17,10 @@ class FakeWriteApi:
 class FakeQueryApi:
     def __init__(self, tables=None):
         self._tables = tables or []
+        self.last_flux: str = ""
 
     def query(self, flux, org):
+        self.last_flux = flux
         return self._tables
 
 
@@ -123,3 +125,30 @@ def test_recent_events_returns_empty_list_when_no_data():
     gateway = InfluxGateway(_settings(), client_factory=lambda s: fake)
     result = gateway.recent_events(host="srv01", limit=10)
     assert result == []
+
+
+def test_write_logout_with_reason_omits_reason_tag():
+    """Logout events must never carry a reason tag even when reason is set."""
+    fake = FakeClient()
+    gateway = InfluxGateway(_settings(), client_factory=lambda s: fake)
+    event = EventIn(
+        event_type="logout",
+        host="srv01",
+        os_user="alice",
+        reason="Session expired",
+        timestamp=datetime(2026, 6, 26, 9, 0, tzinfo=timezone.utc),
+    )
+    gateway.write_event(event)
+    _, _, point = fake._write_api.written[0]
+    line = point.to_line_protocol()
+    assert "reason" not in line
+    assert "event_type=logout" in line
+
+
+def test_recent_events_uses_days_parameter():
+    """recent_events(days=7) must pass -7d into the Flux range filter."""
+    fake = FakeClient(tables=[])
+    gateway = InfluxGateway(_settings(), client_factory=lambda s: fake)
+    gateway.recent_events(host="srv1", limit=10, days=7)
+    assert "-7d" in fake._query_api.last_flux
+    assert "-30d" not in fake._query_api.last_flux
