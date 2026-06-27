@@ -35,7 +35,7 @@ def main() -> None:
         pass
 
     window.login_completed.connect(app.quit)
-    window.show()
+    window.showFullScreen()
     sys.exit(app.exec())
 
 
