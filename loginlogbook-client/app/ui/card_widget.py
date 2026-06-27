@@ -73,7 +73,7 @@ class CardWidget(QWidget):
     def _apply_card_style(self) -> None:
         self.setStyleSheet(
             f"QWidget#card {{ background-color: {COLORS['card_bg']};"
-            "border-radius: 12px; }}"
+            "border-radius: 12px; }"
         )
         self.setGraphicsEffect(self._make_shadow())
 

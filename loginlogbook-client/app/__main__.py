@@ -12,13 +12,13 @@ from app.ui.styles import STYLESHEET
 
 def main() -> None:
     if os.environ.get("WAYLAND_DISPLAY") and "QT_QPA_PLATFORM" not in os.environ:
-        os.environ["QT_QPA_PLATFORM"] = "xcb"
+        os.environ["QT_QPA_PLATFORM"] = "wayland"
 
     if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
         QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling)
 
     app = QApplication(sys.argv)
-    app.setLocale(QLocale(QLocale.Language.German, QLocale.Country.Germany))
+    QLocale.setDefault(QLocale(QLocale.Language.German, QLocale.Country.Germany))
     app.setApplicationName("LoginLogBook")
     app.setStyleSheet(STYLESHEET)
 
