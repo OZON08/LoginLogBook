@@ -30,4 +30,4 @@ def test_health_ok_when_influx_up():
 def test_health_503_when_influx_down():
     resp = _health_client(up=False).get("/health")
     assert resp.status_code == 503
-    assert resp.json()["influxdb"] == "down"
+    assert resp.json() == {"status": "degraded", "influxdb": "down"}
