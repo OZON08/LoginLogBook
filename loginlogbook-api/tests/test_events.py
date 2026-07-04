@@ -49,6 +49,31 @@ def test_recent_events_respects_limit(events_client):
     assert len(resp.json()) == 3
 
 
+def test_recent_events_default_limit_is_five(events_client):
+    for i in range(7):
+        events_client.post(
+            "/events", json=_login_payload(user=f"u{i}"), headers=CLIENT
+        )
+    resp = events_client.get("/events/recent", params={"host": "srv01"}, headers=CLIENT)
+    assert len(resp.json()) == 5
+
+
+def test_recent_events_filters_by_event_type(events_client):
+    events_client.post("/events", json=_login_payload(), headers=CLIENT)
+    events_client.post(
+        "/events",
+        json={"event_type": "logout", "host": "srv01", "os_user": "alice",
+              "timestamp": "2026-06-26T09:00:00+00:00"},
+        headers=CLIENT,
+    )
+    resp = events_client.get(
+        "/events/recent", params={"host": "srv01", "event_type": "login"}, headers=CLIENT
+    )
+    body = resp.json()
+    assert len(body) == 1
+    assert body[0]["event_type"] == "login"
+
+
 def test_recent_events_requires_client_token(events_client):
     resp = events_client.get("/events/recent", params={"host": "srv01"})
     assert resp.status_code == 403

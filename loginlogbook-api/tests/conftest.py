@@ -6,7 +6,9 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings, get_settings
 from app.main import create_app
+from app.models import EventIn, EventOut
 from app.reasons_store import ReasonsStore
+from app.routers import events as events_router
 from app.routers import reasons as reasons_router
 
 
@@ -31,11 +33,6 @@ def configured_client(tmp_path: Path) -> TestClient:
         lambda: ReasonsStore(settings.reasons_file)
     )
     return TestClient(app)
-
-
-from app.influx import InfluxGateway
-from app.models import EventIn, EventOut
-from app.routers import events as events_router
 
 
 class FakeGateway:
