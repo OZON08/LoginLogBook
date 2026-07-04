@@ -1,6 +1,5 @@
 """FastAPI application factory and wiring."""
 import time
-from collections import defaultdict
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -15,11 +14,11 @@ from app.routers import branding, events, health, reasons
 
 
 def _rate_key(request: Request) -> str:
-    """Rate-limit key: client token when present, remote IP otherwise."""
-    token = request.headers.get("x-client-token")
-    if token:
-        return token
-    return request.client.host if request.client else "unknown"
+    """Rate-limit key: real client IP (X-Real-IP set by nginx, else direct host)."""
+    return (
+        request.headers.get("x-real-ip")
+        or (request.client.host if request.client else "unknown")
+    )
 
 
 class _RateLimiter(BaseHTTPMiddleware):
@@ -27,19 +26,24 @@ class _RateLimiter(BaseHTTPMiddleware):
 
     _LIMIT = 60
     _WINDOW = 60.0
+    _MAX_KEYS = 10_000
 
     def __init__(self, app) -> None:
         super().__init__(app)
-        self._hits: dict[str, list[float]] = defaultdict(list)
+        self._hits: dict[str, list[float]] = {}
 
     async def dispatch(self, request: Request, call_next) -> Response:
         key = _rate_key(request)
         now = time.monotonic()
-        recent = [t for t in self._hits[key] if now - t < self._WINDOW]
+        recent = [t for t in self._hits.get(key, []) if now - t < self._WINDOW]
         if len(recent) >= self._LIMIT:
             return JSONResponse({"detail": "Too Many Requests"}, status_code=429)
         recent.append(now)
         self._hits[key] = recent
+        if len(self._hits) > self._MAX_KEYS:
+            expired = [k for k, ts in self._hits.items() if not ts or now - ts[-1] >= self._WINDOW]
+            for k in expired:
+                del self._hits[k]
         return await call_next(request)
 
 
