@@ -2,6 +2,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,10 +18,22 @@ class Settings(BaseSettings):
 
     admin_token: str = ""
     client_token: str = ""
+    client_tokens: list[str] = []
 
     reasons_file: Path = Path("/data/reasons.json")
     logo_dir: Path = Path("/data/logo")
     logo_max_bytes: int = 2_097_152
+
+    @field_validator("client_tokens", mode="before")
+    @classmethod
+    def _parse_tokens(cls, v):
+        if isinstance(v, str):
+            return [t.strip() for t in v.split(",") if t.strip()]
+        return v
+
+    def effective_client_tokens(self) -> list[str]:
+        """Return client_tokens if set, else [client_token] for backward compat."""
+        return self.client_tokens if self.client_tokens else [self.client_token]
 
 
 @lru_cache
