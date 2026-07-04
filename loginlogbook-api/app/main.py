@@ -31,6 +31,7 @@ def create_app() -> FastAPI:
     app.include_router(reasons.router)
     app.include_router(events.router)
     app.include_router(branding.router)
+    app.dependency_overrides[health.get_influx_gateway] = get_influx_gateway
     app.dependency_overrides[reasons.get_reasons_store] = get_reasons_store
     app.dependency_overrides[events.get_influx_gateway] = get_influx_gateway
     app.dependency_overrides[branding.get_logo_store] = get_logo_store
