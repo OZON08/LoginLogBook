@@ -91,3 +91,31 @@ def test_put_logo_requires_admin(tmp_path):
 def test_get_logo_requires_client_token(tmp_path):
     client = _branding_client(tmp_path)
     assert client.get("/branding/logo").status_code == 403
+
+
+def test_svg_response_has_attachment_disposition(tmp_path):
+    client = _branding_client(tmp_path)
+    svg_bytes = b"<svg xmlns='http://www.w3.org/2000/svg'/>"
+    upload = {"file": ("logo.svg", BytesIO(svg_bytes), "image/svg+xml")}
+    client.put("/branding/logo", files=upload, headers=ADMIN)
+    got = client.get("/branding/logo", headers=CLIENT)
+    assert got.status_code == 200
+    assert "attachment" in got.headers.get("content-disposition", "")
+
+
+def test_put_logo_rejects_oversize(tmp_path):
+    app = create_app()
+    settings = Settings(
+        admin_token="admin-secret",
+        client_token="client-secret",
+        reasons_file=tmp_path / "reasons.json",
+        logo_dir=tmp_path / "logo",
+        logo_max_bytes=10,
+    )
+    app.dependency_overrides[get_settings] = lambda: settings
+    app.dependency_overrides[branding_router.get_logo_store] = lambda: LogoStore(
+        settings.logo_dir, settings.logo_max_bytes
+    )
+    client = TestClient(app)
+    upload = {"file": ("logo.png", BytesIO(b"0" * 11), "image/png")}
+    assert client.put("/branding/logo", files=upload, headers=ADMIN).status_code == 400

@@ -20,7 +20,10 @@ def get_logo(store: Annotated[LogoStore, Depends(get_logo_store)]) -> Response:
     if loaded is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No logo set")
     content, content_type = loaded
-    return Response(content=content, media_type=content_type)
+    headers = {}
+    if content_type == "image/svg+xml":
+        headers["Content-Disposition"] = "attachment; filename=\"logo.svg\""
+    return Response(content=content, media_type=content_type, headers=headers)
 
 
 @router.put(
