@@ -10,7 +10,6 @@ dependencies = [
     "pydantic-settings>=2.3",
     "influxdb-client>=1.43",
     "python-multipart>=0.0.9",
-    "slowapi>=0.1.9",
 ]
 
 [project.optional-dependencies]
