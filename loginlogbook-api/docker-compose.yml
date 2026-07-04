@@ -1,0 +1,36 @@
+services:
+  influxdb:
+    image: influxdb:2.7
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: ${DOCKER_INFLUXDB_INIT_MODE}
+      DOCKER_INFLUXDB_INIT_USERNAME: ${DOCKER_INFLUXDB_INIT_USERNAME}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${DOCKER_INFLUXDB_INIT_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${DOCKER_INFLUXDB_INIT_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${DOCKER_INFLUXDB_INIT_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    volumes:
+      - influx-data:/var/lib/influxdb2
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    environment:
+      INFLUX_URL: ${INFLUX_URL}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+      INFLUX_ORG: ${INFLUX_ORG}
+      INFLUX_BUCKET: ${INFLUX_BUCKET}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      CLIENT_TOKEN: ${CLIENT_TOKEN}
+      REASONS_FILE: ${REASONS_FILE}
+      LOGO_DIR: ${LOGO_DIR}
+    volumes:
+      - api-data:/data
+    ports:
+      - "8000:8000"
+
+volumes:
+  influx-data:
+  api-data:
