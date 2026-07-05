@@ -35,6 +35,7 @@ services:
       CLIENT_TOKENS: ${CLIENT_TOKENS}
       REASONS_FILE: ${REASONS_FILE}
       LOGO_DIR: ${LOGO_DIR}
+      CLIENTS_FILE: ${CLIENTS_FILE}
     volumes:
       - api-data:/data
     networks:
