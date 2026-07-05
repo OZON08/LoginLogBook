@@ -22,7 +22,10 @@ def _get_display():
 def logoff() -> None:
     session_id = os.getenv("XDG_SESSION_ID", "")
     try:
-        subprocess.run(["loginctl", "terminate-session", session_id], check=False)
+        if session_id:
+            subprocess.run(["loginctl", "terminate-session", session_id], check=False)
+        else:
+            raise FileNotFoundError
     except FileNotFoundError:
         user = os.getenv("USER", "")
         subprocess.run(["pkill", "-KILL", "-u", user], check=False)

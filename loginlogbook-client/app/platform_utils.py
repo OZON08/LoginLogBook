@@ -13,10 +13,11 @@ def _detect_platform() -> str:
 
 
 def logoff() -> None:
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         _w32.logoff()
-    elif _detect_platform() == "linux":
+    elif plat == "linux":
         import app.platform_linux as _lnx
         _lnx.logoff()
     else:
@@ -24,20 +25,22 @@ def logoff() -> None:
 
 
 def get_current_user() -> str:
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         return _w32.get_current_user()
-    if _detect_platform() == "linux":
+    if plat == "linux":
         import app.platform_linux as _lnx
         return _lnx.get_current_user()
     return ""
 
 
 def get_hostname() -> str:
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         return _w32.get_hostname()
-    if _detect_platform() == "linux":
+    if plat == "linux":
         import app.platform_linux as _lnx
         return _lnx.get_hostname()
     import socket
@@ -46,27 +49,30 @@ def get_hostname() -> str:
 
 def setup_fullscreen(window: QMainWindow) -> None:
     window.showFullScreen()
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         _w32.setup_fullscreen(int(window.winId()))
-    elif _detect_platform() == "linux":
+    elif plat == "linux":
         import app.platform_linux as _lnx
         _lnx.setup_fullscreen(window)
 
 
 def lock_system(window: QMainWindow) -> None:
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         _w32.lock(int(window.winId()))
-    elif _detect_platform() == "linux":
+    elif plat == "linux":
         import app.platform_linux as _lnx
         _lnx.lock(window)
 
 
 def unlock_system(window: QMainWindow) -> None:
-    if _detect_platform() == "win32":
+    plat = _detect_platform()
+    if plat == "win32":
         import app.platform_win32 as _w32
         _w32.unlock(int(window.winId()))
-    elif _detect_platform() == "linux":
+    elif plat == "linux":
         import app.platform_linux as _lnx
         _lnx.unlock(window)
