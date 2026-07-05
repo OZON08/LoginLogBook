@@ -16,7 +16,9 @@ class ClientStore:
         return json.loads(self._path.read_text(encoding="utf-8"))
 
     def _save(self, records: list[dict]) -> None:
-        self._path.write_text(json.dumps(records, indent=2), encoding="utf-8")
+        tmp = self._path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(records, indent=2), encoding="utf-8")
+        tmp.replace(self._path)
 
     def tokens(self) -> list[str]:
         return [r["token"] for r in self._load()]

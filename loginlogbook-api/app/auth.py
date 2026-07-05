@@ -29,10 +29,13 @@ def require_client(
     store: Annotated[ClientStore, Depends(get_client_store)],
     x_client_token: Annotated[str | None, Header()] = None,
 ) -> None:
-    tokens = settings.effective_client_tokens() + store.tokens()
-    if not x_client_token or not any(
-        secrets.compare_digest(x_client_token, t) for t in tokens if t
-    ):
+    tokens = [t for t in settings.effective_client_tokens() + store.tokens() if t]
+    candidate = x_client_token or ""
+    valid = False
+    for t in tokens:
+        if secrets.compare_digest(candidate, t):
+            valid = True
+    if not x_client_token or not valid:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid client token"
         )

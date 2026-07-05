@@ -137,3 +137,11 @@ def test_registered_token_accepted_for_client_auth(tmp_path):
     client.post("/clients", json={"name": "ws-01", "token": "new-token"}, headers=ADMIN)
     resp = client.get("/reasons", headers={"X-Client-Token": "new-token"})
     assert resp.status_code == 200
+
+
+def test_revoked_token_is_rejected(tmp_path):
+    client = _clients_app(tmp_path)
+    client.post("/clients", json={"name": "ws-01", "token": "new-token"}, headers=ADMIN)
+    assert client.get("/reasons", headers={"X-Client-Token": "new-token"}).status_code == 200
+    client.delete("/clients/ws-01", headers=ADMIN)
+    assert client.get("/reasons", headers={"X-Client-Token": "new-token"}).status_code == 403
