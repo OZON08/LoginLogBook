@@ -20,11 +20,13 @@ def _app_with_protected_routes() -> FastAPI:
     def client_only() -> dict[str, bool]:
         return {"ok": True}
 
-    _tmp = Path(tempfile.mkdtemp())
+    _td = tempfile.TemporaryDirectory()
+    app._tempdir = _td  # keep reference alive — cleaned up when app is GC'd
+    _clients_path = Path(_td.name) / "clients.json"
     app.dependency_overrides[get_settings] = lambda: Settings(
         admin_token="admin-secret",
         client_token="client-secret",
-        clients_file=_tmp / "clients.json",
+        clients_file=_clients_path,
     )
     return app
 
