@@ -2,8 +2,12 @@
 from pathlib import Path
 
 import pytest
+from fastapi.testclient import TestClient
 
 from app.client_store import ClientStore
+from app.config import Settings, get_settings
+from app.main import create_app
+from app.routers import clients as clients_router
 
 
 def test_tokens_empty_when_file_missing(tmp_path: Path):
@@ -48,16 +52,7 @@ def test_persists_across_instances(tmp_path: Path):
     assert ClientStore(path).list_names() == ["ws-01"]
 
 
-"""Endpoint tests for /clients."""
-from fastapi.testclient import TestClient
-
-from app.config import Settings, get_settings
-from app.main import create_app
-from app.routers import clients as clients_router
-
-
 ADMIN = {"X-Admin-Token": "admin-secret"}
-CLIENT = {"X-Client-Token": "client-secret"}
 
 
 def _clients_app(tmp_path: Path) -> TestClient:
