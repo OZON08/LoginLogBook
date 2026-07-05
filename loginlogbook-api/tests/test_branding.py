@@ -50,6 +50,7 @@ def _branding_client(tmp_path: Path) -> TestClient:
         client_token="client-secret",
         reasons_file=tmp_path / "reasons.json",
         logo_dir=tmp_path / "logo",
+        clients_file=tmp_path / "clients.json",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[branding_router.get_logo_store] = lambda: LogoStore(
@@ -111,6 +112,7 @@ def test_put_logo_rejects_oversize(tmp_path):
         reasons_file=tmp_path / "reasons.json",
         logo_dir=tmp_path / "logo",
         logo_max_bytes=10,
+        clients_file=tmp_path / "clients.json",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[branding_router.get_logo_store] = lambda: LogoStore(

@@ -27,6 +27,7 @@ def configured_client(tmp_path: Path) -> TestClient:
         client_token="client-secret",
         reasons_file=tmp_path / "reasons.json",
         logo_dir=tmp_path / "logo",
+        clients_file=tmp_path / "clients.json",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[reasons_router.get_reasons_store] = (
@@ -83,6 +84,7 @@ def events_client(tmp_path: Path, fake_gateway: FakeGateway) -> TestClient:
         client_token="client-secret",
         reasons_file=tmp_path / "reasons.json",
         logo_dir=tmp_path / "logo",
+        clients_file=tmp_path / "clients.json",
     )
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[events_router.get_influx_gateway] = lambda: fake_gateway
