@@ -39,3 +39,16 @@ class EventOut(BaseModel):
     os_user: str
     reason: str | None = None
     timestamp: datetime
+
+
+class ClientIn(BaseModel):
+    """Payload for registering a new client."""
+
+    name: str
+    token: str
+
+
+class ClientOut(BaseModel):
+    """A registered client (token intentionally omitted)."""
+
+    name: str
