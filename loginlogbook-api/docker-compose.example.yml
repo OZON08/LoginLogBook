@@ -22,7 +22,7 @@ services:
       - internal
 
   api:
-    image: ghcr.io/ozon08/loginlogbook-api:latest
+    image: ozon08/loginlogbook-api:latest
     restart: unless-stopped
     depends_on:
       influxdb:
