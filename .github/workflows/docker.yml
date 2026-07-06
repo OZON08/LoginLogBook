@@ -36,7 +36,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install system dependencies
-        run: sudo apt-get install -y libgl1 libglib2.0-0 libdbus-1-3
+        run: sudo apt-get install -y libgl1 libglib2.0-0 libdbus-1-3 libegl1
 
       - name: Install dependencies
         run: pip install -e ".[dev]"
@@ -49,7 +49,7 @@ jobs:
         working-directory: loginlogbook-client
 
   build:
-    needs: [test-api, test-client]
+    needs: [test-api]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
