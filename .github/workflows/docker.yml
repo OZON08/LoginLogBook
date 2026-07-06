@@ -96,3 +96,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: ozon08/loginlogbook-api
           readme-filepath: ./loginlogbook-api/DOCKERHUB.md
+          short-description: "Fullscreen login overlay API — records why users log into servers before releasing the desktop."
