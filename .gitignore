@@ -42,6 +42,7 @@ build/
 *.pem
 *.crt
 nginx/certs/
+docker-compose.dev.yml
 
 # Editor
 .vscode/
