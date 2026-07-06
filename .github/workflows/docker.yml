@@ -1,13 +1,56 @@
-name: Docker
+name: CI / Docker
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   release:
     types: [published]
 
 jobs:
+  test-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+        working-directory: loginlogbook-api
+
+      - name: Run tests
+        run: python -m pytest
+        working-directory: loginlogbook-api
+
+  test-client:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: sudo apt-get install -y libgl1 libglib2.0-0 libdbus-1-3
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+        working-directory: loginlogbook-client
+
+      - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest
+        working-directory: loginlogbook-client
+
   build:
+    needs: [test-api, test-client]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
