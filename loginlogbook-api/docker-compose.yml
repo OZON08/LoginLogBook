@@ -8,34 +8,19 @@ services:
       timeout: 3s
       retries: 10
       start_period: 20s
-    environment:
-      DOCKER_INFLUXDB_INIT_MODE: ${DOCKER_INFLUXDB_INIT_MODE}
-      DOCKER_INFLUXDB_INIT_USERNAME: ${DOCKER_INFLUXDB_INIT_USERNAME}
-      DOCKER_INFLUXDB_INIT_PASSWORD: ${DOCKER_INFLUXDB_INIT_PASSWORD}
-      DOCKER_INFLUXDB_INIT_ORG: ${DOCKER_INFLUXDB_INIT_ORG}
-      DOCKER_INFLUXDB_INIT_BUCKET: ${DOCKER_INFLUXDB_INIT_BUCKET}
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    env_file: .env
     volumes:
       - influx-data:/var/lib/influxdb2
     networks:
       - internal
 
   api:
-    build: .
+    image: ozon08/loginlogbook-api:latest
     restart: unless-stopped
     depends_on:
       influxdb:
         condition: service_healthy
-    environment:
-      INFLUX_URL: ${INFLUX_URL}
-      INFLUX_TOKEN: ${INFLUX_TOKEN}
-      INFLUX_ORG: ${INFLUX_ORG}
-      INFLUX_BUCKET: ${INFLUX_BUCKET}
-      ADMIN_TOKEN: ${ADMIN_TOKEN}
-      CLIENT_TOKENS: ${CLIENT_TOKENS}
-      REASONS_FILE: ${REASONS_FILE}
-      LOGO_DIR: ${LOGO_DIR}
-      CLIENTS_FILE: ${CLIENTS_FILE}
+    env_file: .env
     volumes:
       - api-data:/data
     networks:

@@ -16,10 +16,16 @@ PyQt6 Client  ──HTTPS──►  loginlogbook-api  ──►  InfluxDB
 
 ## Quick start
 
-Copy [`docker-compose.example.yml`](https://github.com/OZON08/LoginLogBook/blob/main/loginlogbook-api/docker-compose.example.yml) from the repository, fill in the `change-me-*` values, and run:
-
 ```bash
-docker compose -f docker-compose.example.yml up -d
+# 1. Clone the repo (for docker-compose.yml and nginx config)
+git clone https://github.com/OZON08/LoginLogBook.git
+cd LoginLogBook/loginlogbook-api
+
+# 2. Create your .env from the example and fill in the values
+cp .env.example .env
+
+# 3. Start
+docker compose up -d
 ```
 
 ## Environment variables
