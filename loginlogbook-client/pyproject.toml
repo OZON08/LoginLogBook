@@ -25,5 +25,8 @@ package = [
 [project.scripts]
 loginlogbook-client = "app.__main__:main"
 
+[tool.setuptools.packages.find]
+include = ["app*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
