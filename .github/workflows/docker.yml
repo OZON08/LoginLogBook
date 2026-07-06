@@ -1,0 +1,49 @@
+name: Docker
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ozon08/loginlogbook-api
+          tags: |
+            # every commit on main → :dev
+            type=raw,value=dev,enable=${{ github.event_name == 'push' }}
+            # release v1.2.3 → :v1.2.3
+            type=semver,pattern={{raw}}
+            # release v1.2.3 → :v1.2
+            type=semver,pattern=v{{major}}.{{minor}}
+            # release v1.2.3 → :v1
+            type=semver,pattern=v{{major}}
+            # release       → :latest
+            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./loginlogbook-api
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
