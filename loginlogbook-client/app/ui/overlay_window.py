@@ -4,8 +4,7 @@ import socket
 from datetime import datetime, timezone
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QColor, QPainter
-from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QHBoxLayout, QMainWindow, QVBoxLayout, QWidget
 
 from app.api_client import ApiClient
 from app.cache import CacheStore
@@ -14,7 +13,7 @@ from app.event_queue import EventQueue
 from app.models import AppConfig, EventIn, EventOut, Reason
 from app.ui.card_widget import CardWidget
 from app.ui.confirm_dialog import ConfirmDialog
-from app.ui.styles import STYLESHEET
+from app.ui.styles import COLORS, STYLESHEET
 
 
 class _DataLoader(QThread):
@@ -83,10 +82,25 @@ class OverlayWindow(QMainWindow):
             Qt.WindowType.FramelessWindowHint
             | Qt.WindowType.WindowStaysOnTopHint
         )
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setStyleSheet(STYLESHEET)
 
-        self._card = CardWidget(self)
+        # Dark overlay container — fills the whole window
+        container = QWidget()
+        container.setStyleSheet(f"background-color: {COLORS['overlay_bg']};")
+        self.setCentralWidget(container)
+
+        # Card centered via layout
+        self._card = CardWidget()
+        outer = QVBoxLayout(container)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addStretch()
+        inner = QHBoxLayout()
+        inner.addStretch()
+        inner.addWidget(self._card)
+        inner.addStretch()
+        outer.addLayout(inner)
+        outer.addStretch()
+
         self._card.footer.set_user_host(self._os_user, self._host)
 
         self._card.search.filter_changed.connect(self._card.reason_list.apply_filter)
@@ -100,22 +114,7 @@ class OverlayWindow(QMainWindow):
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
-        self._center_card()
         self._start_loading()
-
-    def resizeEvent(self, event) -> None:
-        super().resizeEvent(event)
-        self._center_card()
-
-    def paintEvent(self, event) -> None:
-        painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(15, 23, 42, 224))
-
-    def _center_card(self) -> None:
-        cw, ch = self._card.width(), self._card.sizeHint().height()
-        x = (self.width() - cw) // 2
-        y = (self.height() - ch) // 2
-        self._card.move(x, max(y, 32))
 
     def _populate_from_cache(self) -> None:
         if reasons := self._cache.load_reasons():
