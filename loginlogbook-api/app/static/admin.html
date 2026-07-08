@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoginLogBook Admin</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0F172A;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #0F172A;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+
+h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: #374151;
+}
+
+input[type="password"],
+input[type="text"] {
+  width: 100%;
+  border: 1px solid #6B7280;
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9375rem;
+  margin-bottom: 0.75rem;
+  outline: none;
+}
+input:focus { border-color: #2563EB; border-width: 2px; }
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  min-height: 44px;
+}
+
+.btn-primary { background: #2563EB; color: #fff; }
+.btn-primary:hover { background: #1D4ED8; }
+
+.btn-danger {
+  background: transparent;
+  color: #DC2626;
+  border: 1px solid #DC2626;
+  font-size: 0.8125rem;
+  padding: 0.375rem 0.75rem;
+  min-height: unset;
+}
+.btn-danger:hover { background: #FEF2F2; }
+
+.btn-secondary { background: #F1F5F9; color: #0F172A; }
+.btn-secondary:hover { background: #E2E8F0; }
+
+.error { color: #DC2626; font-size: 0.875rem; margin-bottom: 0.75rem; }
+.hidden { display: none !important; }
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.admin-header h1 { margin-bottom: 0; }
+#logout-link { font-size: 0.875rem; color: #2563EB; text-decoration: none; }
+#logout-link:hover { text-decoration: underline; }
+
+.new-client-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.new-client-form input { margin-bottom: 0; flex: 1; }
+.new-client-form button { flex-shrink: 0; }
+#name-error { margin-bottom: 1rem; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 1px solid #6B7280;
+  padding: 0.5rem 0.75rem;
+}
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.9375rem;
+}
+td:last-child { text-align: right; }
+.empty-row td { text-align: center; color: #6B7280; font-size: 0.875rem; }
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+.dialog-overlay .card { max-width: 480px; }
+.dialog-overlay h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+.dialog-overlay p { font-size: 0.875rem; color: #475569; margin-bottom: 1rem; }
+#token-display {
+  display: block;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  word-break: break-all;
+  margin-bottom: 1rem;
+  color: #0F172A;
+}
+.dialog-buttons { display: flex; gap: 0.75rem; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<!-- Login screen -->
+<div id="login-screen" class="card">
+  <h1>LoginLogBook Admin</h1>
+  <form id="login-form">
+    <label for="token-input">Admin-Token</label>
+    <input type="password" id="token-input" autocomplete="current-password" required>
+    <p id="login-error" class="error hidden">Ungültiges Token</p>
+    <button type="submit" class="btn-primary">Anmelden</button>
+  </form>
+</div>
+
+<!-- Main screen -->
+<div id="main-screen" class="card hidden">
+  <div class="admin-header">
+    <h1>LoginLogBook Admin</h1>
+    <a href="#" id="logout-link">Abmelden</a>
+  </div>
+
+  <div class="new-client-form">
+    <input type="text" id="client-name" placeholder="Name des Clients">
+    <button type="button" id="create-btn" class="btn-primary">Anlegen</button>
+  </div>
+  <p id="name-error" class="error hidden">Name bereits vergeben</p>
+
+  <table>
+    <thead><tr><th>Name</th><th></th></tr></thead>
+    <tbody id="clients-body"></tbody>
+  </table>
+</div>
+
+<!-- Token dialog -->
+<div id="token-dialog" class="dialog-overlay hidden">
+  <div class="card">
+    <h2>Client angelegt</h2>
+    <p>Dieses Token wird nur einmal angezeigt. Bitte jetzt kopieren.</p>
+    <code id="token-display"></code>
+    <div class="dialog-buttons">
+      <button id="copy-btn" class="btn-secondary">Kopieren</button>
+      <button id="close-dialog-btn" class="btn-primary">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const loginScreen    = document.getElementById('login-screen');
+const mainScreen     = document.getElementById('main-screen');
+const tokenDialog    = document.getElementById('token-dialog');
+const loginForm      = document.getElementById('login-form');
+const loginError     = document.getElementById('login-error');
+const clientsBody    = document.getElementById('clients-body');
+const clientNameInput = document.getElementById('client-name');
+const createBtn      = document.getElementById('create-btn');
+const nameError      = document.getElementById('name-error');
+const tokenDisplay   = document.getElementById('token-display');
+const copyBtn        = document.getElementById('copy-btn');
+const closeDialogBtn = document.getElementById('close-dialog-btn');
+const logoutLink     = document.getElementById('logout-link');
+
+let adminToken = sessionStorage.getItem('adminToken') || '';
+if (adminToken) showMain();
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const token = document.getElementById('token-input').value;
+  let res;
+  try { res = await fetch('/clients', { headers: { 'X-Admin-Token': token } }); }
+  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 403) { loginError.classList.remove('hidden'); return; }
+  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  adminToken = token;
+  sessionStorage.setItem('adminToken', token);
+  loginError.classList.add('hidden');
+  showMain();
+});
+
+logoutLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem('adminToken');
+  adminToken = '';
+  mainScreen.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+  document.getElementById('token-input').value = '';
+});
+
+async function showMain() {
+  loginScreen.classList.add('hidden');
+  mainScreen.classList.remove('hidden');
+  await loadClients();
+}
+
+async function loadClients() {
+  let res;
+  try { res = await fetch('/clients', { headers: { 'X-Admin-Token': adminToken } }); }
+  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 403) {
+    sessionStorage.removeItem('adminToken');
+    mainScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    loginError.classList.remove('hidden');
+    return;
+  }
+  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  const clients = await res.json();
+  clientsBody.innerHTML = '';
+  if (clients.length === 0) {
+    clientsBody.innerHTML = '<tr class="empty-row"><td colspan="2">Keine Clients vorhanden</td></tr>';
+    return;
+  }
+  for (const c of clients) {
+    const tr = document.createElement('tr');
+    const nameTd = document.createElement('td');
+    nameTd.textContent = c.name;
+    const actionTd = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn-danger';
+    btn.textContent = 'Widerrufen';
+    btn.addEventListener('click', () => revokeClient(c.name));
+    actionTd.appendChild(btn);
+    tr.appendChild(nameTd);
+    tr.appendChild(actionTd);
+    clientsBody.appendChild(tr);
+  }
+}
+
+function generateToken() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+createBtn.addEventListener('click', async () => {
+  const name = clientNameInput.value.trim();
+  if (!name) { clientNameInput.focus(); return; }
+  nameError.classList.add('hidden');
+  const token = generateToken();
+  let res;
+  try {
+    res = await fetch('/clients', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, token }),
+    });
+  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 409) { nameError.classList.remove('hidden'); return; }
+  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  clientNameInput.value = '';
+  tokenDisplay.textContent = token;
+  tokenDialog.classList.remove('hidden');
+  await loadClients();
+});
+
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(tokenDisplay.textContent).then(() => {
+    copyBtn.textContent = 'Kopiert!';
+    setTimeout(() => { copyBtn.textContent = 'Kopieren'; }, 2000);
+  });
+});
+
+closeDialogBtn.addEventListener('click', () => {
+  tokenDialog.classList.add('hidden');
+  tokenDisplay.textContent = '';
+});
+
+async function revokeClient(name) {
+  if (!confirm(`Client "${name}" wirklich widerrufen?`)) return;
+  let res;
+  try {
+    res = await fetch(`/clients/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Token': adminToken },
+    });
+  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 204 || res.status === 404) { await loadClients(); return; }
+  alert('Verbindung fehlgeschlagen, bitte erneut versuchen');
+}
+</script>
+</body>
+</html>
