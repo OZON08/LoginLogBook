@@ -304,7 +304,7 @@ td:last-child { text-align: right; }
   </div>
 </div>
 
-<p class="page-footer">© 2026 OZON08 · MIT License</p>
+<p class="page-footer" id="page-footer">© 2026 OZON08 · MIT License</p>
 
 <!-- Token dialog -->
 <div id="token-dialog" class="dialog-overlay hidden">
@@ -345,6 +345,12 @@ const addReasonBtn    = document.getElementById('add-reason-btn');
 const reasonError     = document.getElementById('reason-error');
 
 let adminToken = sessionStorage.getItem('adminToken') || '';
+
+fetch('/version').then(r => r.ok ? r.json() : null).then(d => {
+  if (d?.version) document.getElementById('page-footer').textContent =
+    `© 2026 OZON08 · MIT License · v${d.version}`;
+}).catch(() => {});
+
 if (adminToken) showMain();
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────

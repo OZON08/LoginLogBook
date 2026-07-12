@@ -1,8 +1,15 @@
 """Footer bar showing current user/host and API connection status."""
+from importlib.metadata import version as _pkg_version
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget
 
 from app.ui.styles import COLORS
+
+try:
+    _VERSION = _pkg_version("loginlogbook-client")
+except Exception:
+    _VERSION = "?"
 
 
 class FooterBar(QWidget):
@@ -15,7 +22,7 @@ class FooterBar(QWidget):
         )
         self._user_label.setAccessibleName("Angemeldeter Benutzer und Hostname")
 
-        self._license_label = QLabel("© 2026 OZON08 · MIT License", self)
+        self._license_label = QLabel(f"© 2026 OZON08 · MIT License · v{_VERSION}", self)
         self._license_label.setStyleSheet(f"font-size: 11px; color: {COLORS['muted']};")
         self._license_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

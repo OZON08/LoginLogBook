@@ -1,9 +1,12 @@
 """Health endpoint with InfluxDB readiness."""
+from importlib.metadata import version as _pkg_version
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response, status
 
 from app.influx import InfluxGateway
+
+_VERSION = _pkg_version("loginlogbook-api")
 
 router = APIRouter()
 
@@ -11,6 +14,11 @@ router = APIRouter()
 def get_influx_gateway() -> InfluxGateway:
     """Overridden in app.main with a settings-backed provider."""
     raise NotImplementedError
+
+
+@router.get("/version", include_in_schema=False)
+def get_version() -> dict[str, str]:
+    return {"version": _VERSION}
 
 
 @router.get("/health")
