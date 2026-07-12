@@ -78,6 +78,7 @@ button {
 .error { color: #DC2626; font-size: 0.875rem; margin-bottom: 0.75rem; }
 .hidden { display: none !important; }
 
+/* Header */
 .admin-header {
   display: flex;
   align-items: center;
@@ -88,16 +89,40 @@ button {
 #logout-link { font-size: 0.875rem; color: #2563EB; text-decoration: none; }
 #logout-link:hover { text-decoration: underline; }
 
-.new-client-form {
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #E2E8F0;
+  margin-bottom: 1.5rem;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  margin-bottom: -2px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #6B7280;
+  min-height: unset;
+  cursor: pointer;
+}
+.tab-btn:hover { color: #374151; }
+.tab-btn.active { color: #2563EB; border-bottom-color: #2563EB; }
+
+/* Add-row form */
+.add-row {
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
   margin-bottom: 1rem;
 }
-.new-client-form input { margin-bottom: 0; flex: 1; }
-.new-client-form button { flex-shrink: 0; }
-#name-error { margin-bottom: 1rem; }
+.add-row input { margin-bottom: 0; flex: 1; }
+.add-row button { flex-shrink: 0; }
 
+/* Tables */
 table { width: 100%; border-collapse: collapse; }
 th {
   text-align: left;
@@ -115,6 +140,7 @@ td {
 td:last-child { text-align: right; }
 .empty-row td { text-align: center; color: #6B7280; font-size: 0.875rem; }
 
+/* Token dialog */
 .dialog-overlay {
   position: fixed;
   inset: 0;
@@ -163,16 +189,36 @@ td:last-child { text-align: right; }
     <a href="#" id="logout-link">Abmelden</a>
   </div>
 
-  <div class="new-client-form">
-    <input type="text" id="client-name" placeholder="Name des Clients">
-    <button type="button" id="create-btn" class="btn-primary">Anlegen</button>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="clients">Clients</button>
+    <button class="tab-btn" data-tab="reasons">Auswahlgründe</button>
   </div>
-  <p id="name-error" class="error hidden">Name bereits vergeben</p>
 
-  <table>
-    <thead><tr><th>Name</th><th></th></tr></thead>
-    <tbody id="clients-body"></tbody>
-  </table>
+  <!-- Clients tab -->
+  <div id="tab-clients">
+    <div class="add-row">
+      <input type="text" id="client-name" placeholder="Name des Clients">
+      <button type="button" id="create-btn" class="btn-primary">Anlegen</button>
+    </div>
+    <p id="name-error" class="error hidden">Name bereits vergeben</p>
+    <table>
+      <thead><tr><th>Name</th><th></th></tr></thead>
+      <tbody id="clients-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Reasons tab -->
+  <div id="tab-reasons" class="hidden">
+    <div class="add-row">
+      <input type="text" id="reason-label" placeholder="Bezeichnung des Grundes">
+      <button type="button" id="add-reason-btn" class="btn-primary">Hinzufügen</button>
+    </div>
+    <p id="reason-error" class="error hidden">Bezeichnung darf nicht leer sein</p>
+    <table>
+      <thead><tr><th>Bezeichnung</th><th></th></tr></thead>
+      <tbody id="reasons-body"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- Token dialog -->
@@ -191,22 +237,40 @@ td:last-child { text-align: right; }
 <script>
 'use strict';
 
-const loginScreen    = document.getElementById('login-screen');
-const mainScreen     = document.getElementById('main-screen');
-const tokenDialog    = document.getElementById('token-dialog');
-const loginForm      = document.getElementById('login-form');
-const loginError     = document.getElementById('login-error');
-const clientsBody    = document.getElementById('clients-body');
+const loginScreen     = document.getElementById('login-screen');
+const mainScreen      = document.getElementById('main-screen');
+const tokenDialog     = document.getElementById('token-dialog');
+const loginForm       = document.getElementById('login-form');
+const loginError      = document.getElementById('login-error');
+const clientsBody     = document.getElementById('clients-body');
 const clientNameInput = document.getElementById('client-name');
-const createBtn      = document.getElementById('create-btn');
-const nameError      = document.getElementById('name-error');
-const tokenDisplay   = document.getElementById('token-display');
-const copyBtn        = document.getElementById('copy-btn');
-const closeDialogBtn = document.getElementById('close-dialog-btn');
-const logoutLink     = document.getElementById('logout-link');
+const createBtn       = document.getElementById('create-btn');
+const nameError       = document.getElementById('name-error');
+const tokenDisplay    = document.getElementById('token-display');
+const copyBtn         = document.getElementById('copy-btn');
+const closeDialogBtn  = document.getElementById('close-dialog-btn');
+const logoutLink      = document.getElementById('logout-link');
+const reasonsBody     = document.getElementById('reasons-body');
+const reasonLabelInput = document.getElementById('reason-label');
+const addReasonBtn    = document.getElementById('add-reason-btn');
+const reasonError     = document.getElementById('reason-error');
 
 let adminToken = sessionStorage.getItem('adminToken') || '';
 if (adminToken) showMain();
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-clients').classList.toggle('hidden', btn.dataset.tab !== 'clients');
+    document.getElementById('tab-reasons').classList.toggle('hidden', btn.dataset.tab !== 'reasons');
+    if (btn.dataset.tab === 'reasons') loadReasons();
+  });
+});
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -231,23 +295,28 @@ logoutLink.addEventListener('click', (e) => {
   document.getElementById('token-input').value = '';
 });
 
+function handleUnauth() {
+  sessionStorage.removeItem('adminToken');
+  mainScreen.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+  loginError.classList.remove('hidden');
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
 async function showMain() {
   loginScreen.classList.add('hidden');
   mainScreen.classList.remove('hidden');
   await loadClients();
 }
 
+// ── Clients ───────────────────────────────────────────────────────────────────
+
 async function loadClients() {
   let res;
   try { res = await fetch('/clients', { headers: { 'X-Admin-Token': adminToken } }); }
   catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
-  if (res.status === 403) {
-    sessionStorage.removeItem('adminToken');
-    mainScreen.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
-    loginError.classList.remove('hidden');
-    return;
-  }
+  if (res.status === 403) { handleUnauth(); return; }
   if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
   const clients = await res.json();
   clientsBody.innerHTML = '';
@@ -298,6 +367,21 @@ createBtn.addEventListener('click', async () => {
   await loadClients();
 });
 
+async function revokeClient(name) {
+  if (!confirm(`Client "${name}" wirklich widerrufen?`)) return;
+  let res;
+  try {
+    res = await fetch(`/clients/${encodeURIComponent(name)}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Token': adminToken },
+    });
+  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 204 || res.status === 404) { await loadClients(); return; }
+  alert('Verbindung fehlgeschlagen, bitte erneut versuchen');
+}
+
+// ── Token dialog ──────────────────────────────────────────────────────────────
+
 copyBtn.addEventListener('click', () => {
   navigator.clipboard.writeText(tokenDisplay.textContent).then(() => {
     copyBtn.textContent = 'Kopiert!';
@@ -310,16 +394,67 @@ closeDialogBtn.addEventListener('click', () => {
   tokenDisplay.textContent = '';
 });
 
-async function revokeClient(name) {
-  if (!confirm(`Client "${name}" wirklich widerrufen?`)) return;
+// ── Reasons ───────────────────────────────────────────────────────────────────
+
+async function loadReasons() {
+  let res;
+  try { res = await fetch('/reasons', { headers: { 'X-Admin-Token': adminToken } }); }
+  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (res.status === 403) { handleUnauth(); return; }
+  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  const reasons = await res.json();
+  reasonsBody.innerHTML = '';
+  if (reasons.length === 0) {
+    reasonsBody.innerHTML = '<tr class="empty-row"><td colspan="2">Keine Auswahlgründe vorhanden</td></tr>';
+    return;
+  }
+  for (const r of reasons) {
+    const tr = document.createElement('tr');
+    const labelTd = document.createElement('td');
+    labelTd.textContent = r.label;
+    const actionTd = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn-danger';
+    btn.textContent = 'Löschen';
+    btn.addEventListener('click', () => deleteReason(r.id, r.label));
+    actionTd.appendChild(btn);
+    tr.appendChild(labelTd);
+    tr.appendChild(actionTd);
+    reasonsBody.appendChild(tr);
+  }
+}
+
+addReasonBtn.addEventListener('click', async () => {
+  const label = reasonLabelInput.value.trim();
+  if (!label) { reasonError.classList.remove('hidden'); reasonLabelInput.focus(); return; }
+  reasonError.classList.add('hidden');
   let res;
   try {
-    res = await fetch(`/clients/${encodeURIComponent(name)}`, {
+    res = await fetch('/reasons', {
+      method: 'POST',
+      headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label }),
+    });
+  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  reasonLabelInput.value = '';
+  await loadReasons();
+});
+
+reasonLabelInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addReasonBtn.click();
+});
+
+async function deleteReason(id, label) {
+  if (!confirm(`Auswahlgrund "${label}" wirklich löschen?`)) return;
+  let res;
+  try {
+    res = await fetch(`/reasons/${encodeURIComponent(id)}`, {
       method: 'DELETE',
       headers: { 'X-Admin-Token': adminToken },
     });
   } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
-  if (res.status === 204 || res.status === 404) { await loadClients(); return; }
+  if (res.status === 204 || res.status === 404) { await loadReasons(); return; }
   alert('Verbindung fehlgeschlagen, bitte erneut versuchen');
 }
 </script>
