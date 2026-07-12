@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 
 from app.client_store import ClientStore
+from app.errors import register_error_handlers
 from app.config import Settings, get_settings
 from app.influx import InfluxGateway
 from app.logo_store import LogoStore
@@ -36,6 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(branding.router)
     app.include_router(clients_router.router)
     app.include_router(admin_router.router)
+    register_error_handlers(app)
     app.dependency_overrides[reasons.get_reasons_store] = get_reasons_store
     app.dependency_overrides[events.get_influx_gateway] = get_influx_gateway
     app.dependency_overrides[branding.get_logo_store] = get_logo_store
