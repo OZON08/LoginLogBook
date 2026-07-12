@@ -15,6 +15,10 @@ class FooterBar(QWidget):
         )
         self._user_label.setAccessibleName("Angemeldeter Benutzer und Hostname")
 
+        self._license_label = QLabel("© 2026 OZON08 · MIT License", self)
+        self._license_label.setStyleSheet(f"font-size: 11px; color: {COLORS['muted']};")
+        self._license_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self._status_label = QLabel("", self)
         self._status_label.setStyleSheet(f"font-size: 12px; color: {COLORS['muted']};")
         self._status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -22,6 +26,8 @@ class FooterBar(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 8, 0, 0)
         layout.addWidget(self._user_label)
+        layout.addStretch()
+        layout.addWidget(self._license_label)
         layout.addStretch()
         layout.addWidget(self._status_label)
 

@@ -2,6 +2,8 @@
 from datetime import datetime
 from typing import Literal
 
+import re
+
 from pydantic import BaseModel, Field
 
 EventType = Literal["login", "logout"]
@@ -71,5 +73,5 @@ class ClientConfig(BaseModel):
 class BrandingConfig(BaseModel):
     """Global branding configuration."""
 
-    logo_height: int = 120
-    logo_bg: str = "#1E293B"
+    logo_height: int = Field(default=120, ge=40, le=300)
+    logo_bg: str = Field(default="#1E293B", pattern=r"^#[0-9A-Fa-f]{6}$")

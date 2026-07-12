@@ -1,5 +1,9 @@
 """Branding logo widget: shows API logo, skeleton while loading, or fallback text."""
+import re
+
 from PyQt6.QtCore import Qt
+
+_HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
@@ -41,7 +45,8 @@ class LogoWidget(QWidget):
             self._fallback_label.setVisible(True)
 
     def set_background(self, color: str) -> None:
-        self.setStyleSheet(f"background-color: {color}; border-radius: 8px;")
+        safe = color if _HEX_COLOR.match(color) else "#1E293B"
+        self.setStyleSheet(f"background-color: {safe}; border-radius: 8px;")
 
     def set_logo(self, data: bytes, content_type: str, height: int = 120) -> None:
         pixmap = QPixmap()
