@@ -124,6 +124,20 @@ QTableWidget#recent_table QHeaderView::section {{
     padding: 6px 8px;
 }}
 
+QLineEdit#free_text_input {{
+    border: 1px solid {COLORS["border_ui"]};
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    background: {COLORS["card_bg"]};
+    color: {COLORS["foreground"]};
+    min-height: 40px;
+}}
+
+QLineEdit#free_text_input:focus {{
+    border: 2px solid {COLORS["primary"]};
+}}
+
 QScrollBar:vertical {{
     width: 6px;
     background: transparent;

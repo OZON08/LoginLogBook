@@ -104,9 +104,8 @@ class OverlayWindow(QMainWindow):
         self._card.footer.set_user_host(self._os_user, self._host)
 
         self._card.search.filter_changed.connect(self._card.reason_list.apply_filter)
-        self._card.reason_list.selection_changed.connect(
-            self._card.button_row.set_selected_reason
-        )
+        self._card.reason_list.selection_changed.connect(self._on_list_selection)
+        self._card.free_text.textChanged.connect(self._on_free_text_changed)
         self._card.button_row.anmelden_clicked.connect(self._on_anmelden)
         self._card.button_row.abmelden_clicked.connect(self._on_abmelden)
 
@@ -145,6 +144,21 @@ class OverlayWindow(QMainWindow):
             lambda: self._card.footer.set_status(online=False)
         )
         self._loader.start()
+
+    def _on_list_selection(self, reason: Reason | None) -> None:
+        if not self._card.free_text.text().strip():
+            self._card.button_row.set_selected_reason(reason)
+
+    def _on_free_text_changed(self, text: str) -> None:
+        stripped = text.strip()
+        if stripped:
+            self._card.button_row.set_selected_reason(
+                Reason(id="", label=stripped, active=True)
+            )
+        else:
+            self._card.button_row.set_selected_reason(
+                self._card.reason_list.selected_reason()
+            )
 
     def _on_reasons(self, reasons: list[Reason]) -> None:
         self._card.reason_list.populate(reasons)

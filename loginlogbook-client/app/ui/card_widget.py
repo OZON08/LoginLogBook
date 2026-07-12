@@ -5,6 +5,8 @@ from PyQt6.QtWidgets import (
     QFrame,
     QGraphicsDropShadowEffect,
     QHBoxLayout,
+    QLabel,
+    QLineEdit,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
@@ -28,9 +30,17 @@ class CardWidget(QWidget):
         self.logo = LogoWidget(self)
         self.search = SearchField(self)
         self.reason_list = ReasonList(self)
+        self.free_text = QLineEdit(self)
+        self.free_text.setObjectName("free_text_input")
+        self.free_text.setPlaceholderText("Freitext eingeben …")
+        self.free_text.setAccessibleName("Freitext-Eingabe")
         self.button_row = ButtonRow(self)
         self.recent_table = RecentTable(self)
         self.footer = FooterBar(self)
+
+        _or_label = QLabel("— oder —", self)
+        _or_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 12px;")
+        _or_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         left = QWidget(self)
         left_layout = QVBoxLayout(left)
@@ -38,6 +48,8 @@ class CardWidget(QWidget):
         left_layout.setSpacing(12)
         left_layout.addWidget(self.search)
         left_layout.addWidget(self.reason_list)
+        left_layout.addWidget(_or_label)
+        left_layout.addWidget(self.free_text)
         left_layout.addStretch()
         left_layout.addWidget(self.button_row)
 
