@@ -76,7 +76,7 @@ class CardWidget(QWidget):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(32, 32, 32, 32)
         outer.setSpacing(24)
-        outer.addWidget(self.logo, alignment=Qt.AlignmentFlag.AlignCenter)
+        outer.addWidget(self.logo)
         outer.addLayout(columns)
         outer.addWidget(self.footer)
 
