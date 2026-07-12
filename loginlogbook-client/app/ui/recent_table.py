@@ -83,7 +83,7 @@ class RecentTable(QWidget):
 
         self._empty_label.setVisible(False)
         self._table.setVisible(True)
-        for event in events:
+        for event in sorted(events, key=lambda e: e.timestamp, reverse=True):
             row = self._table.rowCount()
             self._table.insertRow(row)
             ts = event.timestamp.astimezone().strftime("%d.%m.%Y %H:%M")
