@@ -1,13 +1,17 @@
 """Application entry point."""
 import os
 import sys
+from pathlib import Path
 
 from PyQt6.QtCore import QLocale, Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication
 
 from app.config import get_settings
 from app.ui.overlay_window import OverlayWindow
 from app.ui.styles import STYLESHEET
+
+_ICON = Path(__file__).parent / "resources" / "icon.png"
 
 
 def main() -> None:
@@ -20,6 +24,8 @@ def main() -> None:
     app = QApplication(sys.argv)
     QLocale.setDefault(QLocale(QLocale.Language.German, QLocale.Country.Germany))
     app.setApplicationName("LoginLogBook")
+    if _ICON.exists():
+        app.setWindowIcon(QIcon(str(_ICON)))
     app.setStyleSheet(STYLESHEET)
 
     settings = get_settings()

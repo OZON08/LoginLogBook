@@ -1,5 +1,9 @@
 """FastAPI application factory and wiring."""
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.client_store import ClientStore
 from app.errors import register_error_handlers
@@ -11,6 +15,9 @@ from app.routers import branding, events, health, reasons
 from app.routers import admin as admin_router
 from app.routers import clients as clients_router
 from app.routers import config as config_router
+
+_STATIC_DIR = Path(__file__).parent / "static"
+_DEFAULT_LOGO = _STATIC_DIR / "loginlogbook-logo.svg"
 
 
 def get_reasons_store() -> ReasonsStore:
@@ -31,7 +38,17 @@ def get_client_store() -> ClientStore:
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    app = FastAPI(title="LoginLogBook API", version="0.1.0")
+    _settings = settings or get_settings()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        if settings is None and _DEFAULT_LOGO.exists():
+            store = LogoStore(_settings.logo_dir, _settings.logo_max_bytes)
+            if store.load() is None:
+                store.save(_DEFAULT_LOGO.read_bytes(), "image/svg+xml")
+        yield
+
+    app = FastAPI(title="LoginLogBook API", version="0.1.0", lifespan=lifespan)
     app.include_router(health.router)
     app.include_router(reasons.router)
     app.include_router(events.router)
@@ -47,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.dependency_overrides[clients_router.get_client_store] = get_client_store
     if settings is not None:
         app.dependency_overrides[get_settings] = lambda: settings
+    app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
     return app
 
 
