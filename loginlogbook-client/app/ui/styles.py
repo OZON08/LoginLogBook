@@ -2,20 +2,20 @@
 
 COLORS: dict[str, str] = {
     "overlay_bg": "rgba(15, 23, 42, 224)",
-    "card_bg": "#FFFFFF",
-    "primary": "#2563EB",
-    "primary_hover": "#1D4ED8",
-    "foreground": "#0F172A",
-    "muted": "#475569",
-    "border_decorative": "#E2E8F0",
-    "border_ui": "#6B7280",
-    "selection_bg": "#EFF6FF",
-    "selection_border": "#2563EB",
-    "destructive": "#DC2626",
-    "status_online": "#16A34A",
-    "status_offline": "#CA8A04",
-    "skeleton": "#E2E8F0",
-    "skeleton_shine": "#F8FAFC",
+    "card_bg": "#1E293B",
+    "primary": "#3B82F6",
+    "primary_hover": "#2563EB",
+    "foreground": "#F1F5F9",
+    "muted": "#94A3B8",
+    "border_decorative": "#334155",
+    "border_ui": "#475569",
+    "selection_bg": "#1D3461",
+    "selection_border": "#3B82F6",
+    "destructive": "#F87171",
+    "status_online": "#4ADE80",
+    "status_offline": "#FCD34D",
+    "skeleton": "#334155",
+    "skeleton_shine": "#475569",
 }
 
 STYLESHEET = f"""
@@ -35,6 +35,7 @@ QLineEdit#search_field {{
     padding: 8px 8px 8px 36px;
     font-size: 15px;
     background: {COLORS["card_bg"]};
+    color: {COLORS["foreground"]};
     min-height: 44px;
 }}
 
@@ -45,6 +46,7 @@ QLineEdit#search_field:focus {{
 QListWidget#reason_list {{
     border: none;
     background: {COLORS["card_bg"]};
+    color: {COLORS["foreground"]};
     outline: none;
 }}
 
@@ -54,6 +56,7 @@ QListWidget#reason_list::item {{
     border-bottom: 1px solid {COLORS["border_decorative"]};
     min-height: 38px;
     font-size: 13px;
+    color: {COLORS["foreground"]};
 }}
 
 QListWidget#reason_list::item:selected {{
@@ -64,7 +67,7 @@ QListWidget#reason_list::item:selected {{
 }}
 
 QListWidget#reason_list::item:hover:!selected {{
-    background-color: #F8FAFC;
+    background-color: #273549;
 }}
 
 QPushButton#btn_anmelden {{
@@ -100,12 +103,13 @@ QPushButton#btn_abmelden {{
 }}
 
 QPushButton#btn_abmelden:hover {{
-    background-color: #FEF2F2;
+    background-color: rgba(248, 113, 113, 0.15);
 }}
 
 QTableWidget#recent_table {{
     border: none;
     background: {COLORS["card_bg"]};
+    color: {COLORS["foreground"]};
     gridline-color: {COLORS["border_decorative"]};
     font-size: 13px;
     outline: none;
