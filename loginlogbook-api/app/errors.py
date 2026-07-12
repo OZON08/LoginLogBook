@@ -93,7 +93,7 @@ def register_error_handlers(app: FastAPI) -> None:
         if not _wants_html(request):
             return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
         code = exc.status_code
-        title, message = _DESCRIPTIONS.get(code, ("Fehler", str(exc.detail)))
+        title, message = _DESCRIPTIONS.get(code, ("Fehler", "Ein unbekannter Fehler ist aufgetreten."))
         return HTMLResponse(content=_page(code, title, message), status_code=code)
 
     @app.exception_handler(RequestValidationError)
