@@ -11,7 +11,8 @@ _HTML = (Path(__file__).parent.parent / "static" / "admin.html").read_text(encod
 _CSP = (
     "default-src 'self'; "
     "script-src 'self' 'unsafe-inline'; "
-    "style-src 'self' 'unsafe-inline'"
+    "style-src 'self' 'unsafe-inline'; "
+    "img-src 'self' blob:"
 )
 
 

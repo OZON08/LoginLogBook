@@ -40,6 +40,9 @@ class LogoWidget(QWidget):
         if not loading and not self._image_label.isVisible():
             self._fallback_label.setVisible(True)
 
+    def set_background(self, color: str) -> None:
+        self.setStyleSheet(f"background-color: {color}; border-radius: 8px;")
+
     def set_logo(self, data: bytes, content_type: str, height: int = 120) -> None:
         pixmap = QPixmap()
         pixmap.loadFromData(data)

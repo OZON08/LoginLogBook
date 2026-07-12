@@ -36,4 +36,4 @@ class AppConfig(BaseModel):
 
 class BrandingConfig(BaseModel):
     logo_height: int = 120
-    overlay_color: str = "#0F172A"
+    logo_bg: str = "#1E293B"

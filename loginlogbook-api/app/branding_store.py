@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-_DEFAULTS: dict = {"logo_height": 120, "overlay_color": "#0F172A"}
+_DEFAULTS: dict = {"logo_height": 120, "logo_bg": "#1E293B"}
 
 
 class BrandingStore:

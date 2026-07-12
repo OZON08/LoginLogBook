@@ -271,8 +271,8 @@ td:last-child { text-align: right; }
                style="width:90px; border:1px solid #6B7280; border-radius:6px; padding:0.5rem 0.625rem; font-size:0.9375rem; margin-bottom:0;">
       </div>
       <div>
-        <label for="overlay-color-input" style="font-size:0.8125rem;">Hintergrundfarbe</label>
-        <input type="color" id="overlay-color-input" value="#0F172A"
+        <label for="logo-bg-input" style="font-size:0.8125rem;">Logo-Hintergrund</label>
+        <input type="color" id="logo-bg-input" value="#1E293B"
                style="width:56px; height:38px; border:1px solid #6B7280; border-radius:6px; padding:2px; cursor:pointer; margin-bottom:0;">
       </div>
       <button type="button" id="save-branding-btn" class="btn-primary">Speichern</button>
@@ -535,7 +535,7 @@ async function loadBranding() {
     if (cfgRes.ok) {
       const cfg = await cfgRes.json();
       document.getElementById('logo-height-input').value = cfg.logo_height ?? 120;
-      document.getElementById('overlay-color-input').value = cfg.overlay_color ?? '#0F172A';
+      document.getElementById('logo-bg-input').value = cfg.logo_bg ?? '#1E293B';
     }
   } catch { /* ignore */ }
 }
@@ -544,7 +544,7 @@ document.getElementById('save-branding-btn').addEventListener('click', async () 
   const err = document.getElementById('branding-cfg-error');
   err.classList.add('hidden');
   const logo_height = parseInt(document.getElementById('logo-height-input').value, 10);
-  const overlay_color = document.getElementById('overlay-color-input').value;
+  const logo_bg = document.getElementById('logo-bg-input').value;
   if (!logo_height || logo_height < 40 || logo_height > 300) {
     err.textContent = 'Logo-Höhe muss zwischen 40 und 300 px liegen.';
     err.classList.remove('hidden');
@@ -554,7 +554,7 @@ document.getElementById('save-branding-btn').addEventListener('click', async () 
     const res = await fetch('/branding/config', {
       method: 'PUT',
       headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logo_height, overlay_color }),
+      body: JSON.stringify({ logo_height, logo_bg }),
     });
     if (!res.ok) { err.textContent = 'Speichern fehlgeschlagen.'; err.classList.remove('hidden'); }
   } catch { err.textContent = 'Verbindung fehlgeschlagen.'; err.classList.remove('hidden'); }

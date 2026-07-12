@@ -182,7 +182,7 @@ class OverlayWindow(QMainWindow):
 
     def _on_branding(self, cfg: BrandingConfig) -> None:
         self._logo_height = cfg.logo_height
-        self._container.setStyleSheet(f"background-color: {cfg.overlay_color};")
+        self._card.logo.set_background(cfg.logo_bg)
         if self._logo_data:
             self._card.logo.set_logo(*self._logo_data, cfg.logo_height)
 

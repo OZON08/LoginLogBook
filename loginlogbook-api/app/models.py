@@ -72,4 +72,4 @@ class BrandingConfig(BaseModel):
     """Global branding configuration."""
 
     logo_height: int = 120
-    overlay_color: str = "#0F172A"
+    logo_bg: str = "#1E293B"
