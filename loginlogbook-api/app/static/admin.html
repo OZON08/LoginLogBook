@@ -169,18 +169,42 @@ td:last-child { text-align: right; }
 .dialog-overlay .card { max-width: 480px; }
 .dialog-overlay h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
 .dialog-overlay p { font-size: 0.875rem; color: #475569; margin-bottom: 1rem; }
-#token-display {
-  display: block;
-  background: #F8FAFC;
+.token-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 1rem;
   border: 1px solid #E2E8F0;
   border-radius: 6px;
+  overflow: hidden;
+}
+#token-display {
+  flex: 1;
+  display: block;
+  background: #F8FAFC;
   padding: 0.75rem;
   font-family: monospace;
   font-size: 0.875rem;
   word-break: break-all;
-  margin-bottom: 1rem;
   color: #0F172A;
+  border: none;
+  margin: 0;
 }
+#copy-inline-btn {
+  background: #F1F5F9;
+  border: none;
+  border-left: 1px solid #E2E8F0;
+  border-radius: 0;
+  padding: 0 0.875rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #475569;
+  min-height: unset;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+#copy-inline-btn:hover { background: #E2E8F0; color: #0F172A; }
+#copy-inline-btn.copied { background: #DCFCE7; color: #16A34A; }
 .dialog-buttons { display: flex; gap: 0.75rem; justify-content: flex-end; }
 </style>
 </head>
@@ -241,7 +265,10 @@ td:last-child { text-align: right; }
   <div class="card">
     <h2>Client angelegt</h2>
     <p>Dieses Token wird nur einmal angezeigt. Bitte jetzt kopieren.</p>
-    <code id="token-display"></code>
+    <div class="token-row">
+      <code id="token-display"></code>
+      <button id="copy-inline-btn" title="Kopieren">⎘</button>
+    </div>
     <div class="dialog-buttons">
       <button id="copy-btn" class="btn-secondary">Kopieren</button>
       <button id="close-dialog-btn" class="btn-primary">Schließen</button>
@@ -263,6 +290,7 @@ const createBtn       = document.getElementById('create-btn');
 const nameError       = document.getElementById('name-error');
 const tokenDisplay    = document.getElementById('token-display');
 const copyBtn         = document.getElementById('copy-btn');
+const copyInlineBtn   = document.getElementById('copy-inline-btn');
 const closeDialogBtn  = document.getElementById('close-dialog-btn');
 const logoutLink      = document.getElementById('logout-link');
 const reasonsBody     = document.getElementById('reasons-body');
@@ -424,12 +452,20 @@ async function revokeClient(name) {
 
 // ── Token dialog ──────────────────────────────────────────────────────────────
 
-copyBtn.addEventListener('click', () => {
+function copyToken() {
   navigator.clipboard.writeText(tokenDisplay.textContent).then(() => {
     copyBtn.textContent = 'Kopiert!';
-    setTimeout(() => { copyBtn.textContent = 'Kopieren'; }, 2000);
+    copyInlineBtn.textContent = '✓';
+    copyInlineBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = 'Kopieren';
+      copyInlineBtn.textContent = '⎘';
+      copyInlineBtn.classList.remove('copied');
+    }, 2000);
   });
-});
+}
+copyBtn.addEventListener('click', copyToken);
+copyInlineBtn.addEventListener('click', copyToken);
 
 closeDialogBtn.addEventListener('click', () => {
   tokenDialog.classList.add('hidden');
