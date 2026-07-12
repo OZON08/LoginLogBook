@@ -48,7 +48,21 @@ class ClientIn(BaseModel):
     token: str = Field(min_length=1)
 
 
+class ClientPatch(BaseModel):
+    """Updatable fields for a registered client."""
+
+    allow_free_text: bool
+
+
 class ClientOut(BaseModel):
     """A registered client (token intentionally omitted)."""
 
     name: str
+    allow_free_text: bool = True
+
+
+class ClientConfig(BaseModel):
+    """Per-client configuration returned to the client app."""
+
+    recent_days: int = 7
+    allow_free_text: bool = True

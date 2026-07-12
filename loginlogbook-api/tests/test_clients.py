@@ -88,7 +88,7 @@ def test_register_client(tmp_path):
     client = _clients_app(tmp_path)
     resp = client.post("/clients", json={"name": "ws-01", "token": "abc"}, headers=ADMIN)
     assert resp.status_code == 201
-    assert resp.json() == {"name": "ws-01"}
+    assert resp.json() == {"name": "ws-01", "allow_free_text": True}
 
 
 def test_register_returns_name_not_token(tmp_path):

@@ -26,11 +26,23 @@ class ClientStore:
     def list_names(self) -> list[str]:
         return [r["name"] for r in self._load()]
 
+    def list_records(self) -> list[dict]:
+        return [
+            {**r, "allow_free_text": r.get("allow_free_text", True)}
+            for r in self._load()
+        ]
+
+    def find_by_token(self, token: str) -> dict | None:
+        for r in self._load():
+            if r["token"] == token:
+                return {**r, "allow_free_text": r.get("allow_free_text", True)}
+        return None
+
     def add(self, name: str, token: str) -> None:
         records = self._load()
         if any(r["name"] == name for r in records):
             raise ValueError(f"Client {name!r} already exists")
-        records.append({"name": name, "token": token})
+        records.append({"name": name, "token": token, "allow_free_text": True})
         self._save(records)
 
     def remove(self, name: str) -> bool:
@@ -40,3 +52,12 @@ class ClientStore:
             return False
         self._save(filtered)
         return True
+
+    def set_allow_free_text(self, name: str, allow: bool) -> bool:
+        records = self._load()
+        for r in records:
+            if r["name"] == name:
+                r["allow_free_text"] = allow
+                self._save(records)
+                return True
+        return False

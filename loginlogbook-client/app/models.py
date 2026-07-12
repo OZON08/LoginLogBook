@@ -31,3 +31,4 @@ class EventOut(BaseModel):
 
 class AppConfig(BaseModel):
     recent_days: int = 7
+    allow_free_text: bool = True
