@@ -38,9 +38,9 @@ class CardWidget(QWidget):
         self.recent_table = RecentTable(self)
         self.footer = FooterBar(self)
 
-        _or_label = QLabel("— oder —", self)
-        _or_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 12px;")
-        _or_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.or_label = QLabel("— oder —", self)
+        self.or_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 12px;")
+        self.or_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         left = QWidget(self)
         left_layout = QVBoxLayout(left)
@@ -48,7 +48,7 @@ class CardWidget(QWidget):
         left_layout.setSpacing(12)
         left_layout.addWidget(self.search)
         left_layout.addWidget(self.reason_list)
-        left_layout.addWidget(_or_label)
+        left_layout.addWidget(self.or_label)
         left_layout.addWidget(self.free_text)
         left_layout.addStretch()
         left_layout.addWidget(self.button_row)

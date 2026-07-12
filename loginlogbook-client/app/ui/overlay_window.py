@@ -171,6 +171,7 @@ class OverlayWindow(QMainWindow):
     def _on_config(self, cfg: AppConfig) -> None:
         self._recent_days = cfg.recent_days
         self._card.free_text.setVisible(cfg.allow_free_text)
+        self._card.or_label.setVisible(cfg.allow_free_text)
         if not cfg.allow_free_text:
             self._card.free_text.clear()
         self._cache.save_config(cfg)
