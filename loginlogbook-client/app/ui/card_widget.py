@@ -71,10 +71,6 @@ class CardWidget(QWidget):
         self._apply_card_style()
 
     def _apply_card_style(self) -> None:
-        self.setStyleSheet(
-            f"QWidget#card {{ background-color: {COLORS['card_bg']};"
-            "border-radius: 12px; }"
-        )
         self.setGraphicsEffect(self._make_shadow())
 
     def _make_shadow(self) -> QGraphicsDropShadowEffect:
