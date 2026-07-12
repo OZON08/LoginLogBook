@@ -37,6 +37,12 @@ class RecentTable(QWidget):
         self._table.setObjectName("recent_table")
         self._table.setHorizontalHeaderLabels(self._HEADERS)
         self._table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )
+        self._table.horizontalHeader().setSectionResizeMode(
+            1, QHeaderView.ResizeMode.ResizeToContents
+        )
+        self._table.horizontalHeader().setSectionResizeMode(
             2, QHeaderView.ResizeMode.Stretch
         )
         self._table.verticalHeader().setVisible(False)
@@ -80,7 +86,7 @@ class RecentTable(QWidget):
         for event in events:
             row = self._table.rowCount()
             self._table.insertRow(row)
-            ts = event.timestamp.astimezone(timezone.utc).strftime("%d.%m. %H:%M")
+            ts = event.timestamp.astimezone().strftime("%d.%m.%Y %H:%M")
             for col, text in enumerate([ts, event.os_user, event.reason or ""]):
                 item = QTableWidgetItem(text)
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
