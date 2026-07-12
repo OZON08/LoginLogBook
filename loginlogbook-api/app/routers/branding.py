@@ -4,12 +4,19 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
 
 from app.auth import require_admin, require_client
+from app.branding_store import BrandingStore
 from app.logo_store import LogoStore
+from app.models import BrandingConfig
 
 router = APIRouter(prefix="/branding", tags=["branding"])
 
 
 def get_logo_store() -> LogoStore:
+    """Overridden in app.main with a settings-backed provider."""
+    raise NotImplementedError
+
+
+def get_branding_store() -> BrandingStore:
     """Overridden in app.main with a settings-backed provider."""
     raise NotImplementedError
 
@@ -42,3 +49,22 @@ async def put_logo(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
         ) from exc
+
+
+@router.get("/config", dependencies=[Depends(require_client)])
+def get_branding_config(
+    store: Annotated[BrandingStore, Depends(get_branding_store)],
+) -> BrandingConfig:
+    return BrandingConfig(**store.load())
+
+
+@router.put(
+    "/config",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_admin)],
+)
+def put_branding_config(
+    cfg: BrandingConfig,
+    store: Annotated[BrandingStore, Depends(get_branding_store)],
+) -> None:
+    store.save(cfg.model_dump())

@@ -2,7 +2,7 @@
 import httpx
 
 from app.config import Settings
-from app.models import AppConfig, EventIn, EventOut, Reason
+from app.models import AppConfig, BrandingConfig, EventIn, EventOut, Reason
 
 _TIMEOUT = 5.0
 
@@ -38,6 +38,9 @@ class ApiClient:
 
     def get_config(self) -> AppConfig:
         return AppConfig(**self._get("/config").json())
+
+    def get_branding_config(self) -> BrandingConfig:
+        return BrandingConfig(**self._get("/branding/config").json())
 
     def get_recent_events(self, host: str, days: int) -> list[EventOut]:
         r = self._get("/events/recent", host=host, days=days, limit=100)

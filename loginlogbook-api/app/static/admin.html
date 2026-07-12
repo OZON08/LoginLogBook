@@ -260,6 +260,24 @@ td:last-child { text-align: right; }
     </div>
     <p id="logo-error" class="error hidden"></p>
     <p style="font-size:0.8125rem; color:#6B7280; margin-top:0.5rem;">Erlaubte Formate: PNG, SVG · Max. 2 MB</p>
+
+    <hr style="border:none; border-top:1px solid #E2E8F0; margin:1.5rem 0;">
+
+    <p style="font-size:0.875rem; font-weight:600; color:#374151; margin-bottom:1rem;">Darstellung im Client</p>
+    <div style="display:flex; gap:1.5rem; align-items:flex-end; flex-wrap:wrap; margin-bottom:1rem;">
+      <div>
+        <label for="logo-height-input" style="font-size:0.8125rem;">Logo-Höhe (px)</label>
+        <input type="number" id="logo-height-input" min="40" max="300" value="120"
+               style="width:90px; border:1px solid #6B7280; border-radius:6px; padding:0.5rem 0.625rem; font-size:0.9375rem; margin-bottom:0;">
+      </div>
+      <div>
+        <label for="overlay-color-input" style="font-size:0.8125rem;">Hintergrundfarbe</label>
+        <input type="color" id="overlay-color-input" value="#0F172A"
+               style="width:56px; height:38px; border:1px solid #6B7280; border-radius:6px; padding:2px; cursor:pointer; margin-bottom:0;">
+      </div>
+      <button type="button" id="save-branding-btn" class="btn-primary">Speichern</button>
+    </div>
+    <p id="branding-cfg-error" class="error hidden"></p>
   </div>
 
   <!-- Reasons tab -->
@@ -503,16 +521,44 @@ async function loadBranding() {
   if (res.status === 404) {
     logoPreview.style.display = 'none';
     logoPlaceholder.style.display = '';
+  } else if (res.ok) {
+    const blob = await res.blob();
+    if (_logoBlobUrl) URL.revokeObjectURL(_logoBlobUrl);
+    _logoBlobUrl = URL.createObjectURL(blob);
+    logoPreview.src = _logoBlobUrl;
+    logoPreview.style.display = '';
+    logoPlaceholder.style.display = 'none';
+  }
+
+  try {
+    const cfgRes = await fetch('/branding/config', { headers: { 'X-Admin-Token': adminToken } });
+    if (cfgRes.ok) {
+      const cfg = await cfgRes.json();
+      document.getElementById('logo-height-input').value = cfg.logo_height ?? 120;
+      document.getElementById('overlay-color-input').value = cfg.overlay_color ?? '#0F172A';
+    }
+  } catch { /* ignore */ }
+}
+
+document.getElementById('save-branding-btn').addEventListener('click', async () => {
+  const err = document.getElementById('branding-cfg-error');
+  err.classList.add('hidden');
+  const logo_height = parseInt(document.getElementById('logo-height-input').value, 10);
+  const overlay_color = document.getElementById('overlay-color-input').value;
+  if (!logo_height || logo_height < 40 || logo_height > 300) {
+    err.textContent = 'Logo-Höhe muss zwischen 40 und 300 px liegen.';
+    err.classList.remove('hidden');
     return;
   }
-  if (!res.ok) return;
-  const blob = await res.blob();
-  if (_logoBlobUrl) URL.revokeObjectURL(_logoBlobUrl);
-  _logoBlobUrl = URL.createObjectURL(blob);
-  logoPreview.src = _logoBlobUrl;
-  logoPreview.style.display = '';
-  logoPlaceholder.style.display = 'none';
-}
+  try {
+    const res = await fetch('/branding/config', {
+      method: 'PUT',
+      headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logo_height, overlay_color }),
+    });
+    if (!res.ok) { err.textContent = 'Speichern fehlgeschlagen.'; err.classList.remove('hidden'); }
+  } catch { err.textContent = 'Verbindung fehlgeschlagen.'; err.classList.remove('hidden'); }
+});
 
 document.getElementById('upload-logo-btn').addEventListener('click', async () => {
   const fileInput = document.getElementById('logo-file');

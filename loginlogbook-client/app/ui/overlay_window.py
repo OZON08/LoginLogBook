@@ -10,7 +10,7 @@ from app.api_client import ApiClient
 from app.cache import CacheStore
 from app.config import Settings
 from app.event_queue import EventQueue
-from app.models import AppConfig, EventIn, EventOut, Reason
+from app.models import AppConfig, BrandingConfig, EventIn, EventOut, Reason
 from app.ui.card_widget import CardWidget
 from app.ui.confirm_dialog import ConfirmDialog
 from app.ui.styles import COLORS, STYLESHEET
@@ -22,6 +22,7 @@ class _DataLoader(QThread):
     reasons_loaded = pyqtSignal(list)        # list[Reason]
     logo_loaded = pyqtSignal(bytes, str)     # data, content_type
     config_loaded = pyqtSignal(object)       # AppConfig
+    branding_loaded = pyqtSignal(object)     # BrandingConfig
     events_loaded = pyqtSignal(list)         # list[EventOut]
     finished_online = pyqtSignal()
     finished_offline = pyqtSignal()
@@ -53,6 +54,12 @@ class _DataLoader(QThread):
             pass
 
         try:
+            branding = self._client.get_branding_config()
+            self.branding_loaded.emit(branding)
+        except Exception:
+            pass
+
+        try:
             events = self._client.get_recent_events(self._host, self._days)
             self.events_loaded.emit(events)
         except Exception:
@@ -77,6 +84,8 @@ class OverlayWindow(QMainWindow):
         self._os_user = getpass.getuser()
         self._recent_days = 7
         self._loader: _DataLoader | None = None
+        self._logo_data: tuple[bytes, str] | None = None
+        self._logo_height: int = 120
 
         self.setWindowFlags(
             Qt.WindowType.FramelessWindowHint
@@ -85,7 +94,8 @@ class OverlayWindow(QMainWindow):
         self.setStyleSheet(STYLESHEET)
 
         # Dark overlay container — fills the whole window
-        container = QWidget()
+        self._container = QWidget()
+        container = self._container
         container.setStyleSheet(f"background-color: {COLORS['overlay_bg']};")
         self.setCentralWidget(container)
 
@@ -136,6 +146,7 @@ class OverlayWindow(QMainWindow):
         self._loader.reasons_loaded.connect(self._on_reasons)
         self._loader.logo_loaded.connect(self._on_logo)
         self._loader.config_loaded.connect(self._on_config)
+        self._loader.branding_loaded.connect(self._on_branding)
         self._loader.events_loaded.connect(self._on_events)
         self._loader.finished_online.connect(
             lambda: self._card.footer.set_status(online=True)
@@ -165,8 +176,15 @@ class OverlayWindow(QMainWindow):
         self._cache.save_reasons(reasons)
 
     def _on_logo(self, data: bytes, content_type: str) -> None:
-        self._card.logo.set_logo(data, content_type)
+        self._logo_data = (data, content_type)
+        self._card.logo.set_logo(data, content_type, self._logo_height)
         self._cache.save_logo(data, content_type)
+
+    def _on_branding(self, cfg: BrandingConfig) -> None:
+        self._logo_height = cfg.logo_height
+        self._container.setStyleSheet(f"background-color: {cfg.overlay_color};")
+        if self._logo_data:
+            self._card.logo.set_logo(*self._logo_data, cfg.logo_height)
 
     def _on_config(self, cfg: AppConfig) -> None:
         self._recent_days = cfg.recent_days

@@ -32,3 +32,8 @@ class EventOut(BaseModel):
 class AppConfig(BaseModel):
     recent_days: int = 7
     allow_free_text: bool = True
+
+
+class BrandingConfig(BaseModel):
+    logo_height: int = 120
+    overlay_color: str = "#0F172A"

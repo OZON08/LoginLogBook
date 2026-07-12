@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     logo_dir: Path = Path("/data/logo")
     logo_max_bytes: int = 2_097_152
     clients_file: Path = Path("/data/clients.json")
+    branding_file: Path = Path("/data/branding.json")
 
     @field_validator("client_tokens", mode="before")
     @classmethod

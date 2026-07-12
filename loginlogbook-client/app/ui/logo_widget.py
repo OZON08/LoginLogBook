@@ -10,14 +10,14 @@ class LogoWidget(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setAccessibleName("Firmenlogo")
-        self.setMaximumHeight(80)
+        self.setMaximumHeight(320)
 
         self._skeleton = SkeletonWidget(self)
         self._skeleton.set_geometry_hint(160, 56)
 
         self._image_label = QLabel(self)
         self._image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._image_label.setMaximumHeight(72)
+        self._image_label.setMaximumHeight(300)
         self._image_label.setVisible(False)
 
         self._fallback_label = QLabel("LoginLogBook", self)
@@ -40,12 +40,10 @@ class LogoWidget(QWidget):
         if not loading and not self._image_label.isVisible():
             self._fallback_label.setVisible(True)
 
-    def set_logo(self, data: bytes, content_type: str) -> None:
+    def set_logo(self, data: bytes, content_type: str, height: int = 120) -> None:
         pixmap = QPixmap()
         pixmap.loadFromData(data)
-        scaled = pixmap.scaledToHeight(
-            64, Qt.TransformationMode.SmoothTransformation
-        )
+        scaled = pixmap.scaledToHeight(height, Qt.TransformationMode.SmoothTransformation)
         self._image_label.setPixmap(scaled)
         self._image_label.setVisible(True)
         self._skeleton.setVisible(False)

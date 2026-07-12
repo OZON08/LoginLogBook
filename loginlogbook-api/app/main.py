@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app.branding_store import BrandingStore
 from app.client_store import ClientStore
 from app.errors import register_error_handlers
 from app.config import Settings, get_settings
@@ -37,6 +38,10 @@ def get_client_store() -> ClientStore:
     return ClientStore(get_settings().clients_file)
 
 
+def get_branding_store() -> BrandingStore:
+    return BrandingStore(get_settings().branding_file)
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     _settings = settings or get_settings()
 
@@ -62,6 +67,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.dependency_overrides[branding.get_logo_store] = get_logo_store
     app.dependency_overrides[health.get_influx_gateway] = get_influx_gateway
     app.dependency_overrides[clients_router.get_client_store] = get_client_store
+    app.dependency_overrides[branding.get_branding_store] = get_branding_store
     if settings is not None:
         app.dependency_overrides[get_settings] = lambda: settings
     app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
