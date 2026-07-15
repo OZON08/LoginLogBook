@@ -147,7 +147,7 @@
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> count()"
+          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> count()\n  |> group()\n  |> sum()"
         }
       ]
     },
@@ -198,7 +198,7 @@
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\")\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> keep(columns: [\"host\"])\n  |> distinct(column: \"host\")\n  |> count()"
+          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\")\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> keep(columns: [\"host\"])\n  |> group()\n  |> distinct(column: \"host\")\n  |> count()"
         }
       ]
     },
@@ -249,7 +249,7 @@
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> keep(columns: [\"os_user\"])\n  |> distinct(column: \"os_user\")\n  |> count()"
+          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> keep(columns: [\"os_user\"])\n  |> group()\n  |> distinct(column: \"os_user\")\n  |> count()"
         }
       ]
     },
@@ -496,7 +496,7 @@
       "targets": [
         {
           "refId": "A",
-          "query": "import \"date\"\nfrom(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> map(fn: (r) => ({r with hour: date.hour(t: r._time)}))\n  |> filter(fn: (r) => r.hour < 7 or r.hour > 19)\n  |> count()"
+          "query": "import \"date\"\nfrom(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> map(fn: (r) => ({r with hour: date.hour(t: r._time)}))\n  |> filter(fn: (r) => r.hour < 7 or r.hour > 19)\n  |> count()\n  |> group()\n  |> sum()"
         }
       ]
     },
@@ -556,7 +556,7 @@
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => not exists r.reason)\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> count()"
+          "query": "from(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => not exists r.reason)\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> count()\n  |> group()\n  |> sum()"
         }
       ]
     },
