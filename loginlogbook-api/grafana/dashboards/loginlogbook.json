@@ -1,23 +1,12 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_INFLUXDB",
-      "label": "InfluxDB",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "influxdb",
-      "pluginName": "InfluxDB"
-    }
-  ],
-  "__requires": [
-    {"type": "datasource", "id": "influxdb", "name": "InfluxDB", "version": "1.0.0"},
-    {"type": "grafana", "id": "grafana", "name": "Grafana", "version": "11.0.0"}
-  ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -33,8 +22,13 @@
   "links": [],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["loginlogbook"],
-  "time": {"from": "now-24h", "to": "now"},
+  "tags": [
+    "loginlogbook"
+  ],
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
   "title": "LoginLogBook",
@@ -46,7 +40,10 @@
         "name": "host",
         "label": "Client",
         "type": "query",
-        "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "loginlogbook-influxdb"
+        },
         "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"logins\", tag: \"host\")",
         "query": {
           "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"logins\", tag: \"host\")",
@@ -57,13 +54,20 @@
         "sort": 1,
         "refresh": 2,
         "hide": 0,
-        "current": {"selected": true, "text": "All", "value": "$__all"}
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
       },
       {
         "name": "os_user",
         "label": "Benutzer",
         "type": "query",
-        "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "loginlogbook-influxdb"
+        },
         "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"logins\", tag: \"os_user\")",
         "query": {
           "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"logins\", tag: \"os_user\")",
@@ -74,7 +78,11 @@
         "sort": 1,
         "refresh": 2,
         "hide": 0,
-        "current": {"selected": true, "text": "All", "value": "$__all"}
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
       }
     ]
   },
@@ -84,25 +92,57 @@
       "title": "Betriebsübersicht",
       "type": "row",
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "panels": []
     },
     {
       "id": 2,
       "title": "Logins gesamt",
       "type": "stat",
-      "gridPos": {"h": 4, "w": 8, "x": 0, "y": 1},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
       },
       "targets": [
         {
@@ -115,18 +155,45 @@
       "id": 3,
       "title": "Aktive Clients",
       "type": "stat",
-      "gridPos": {"h": 4, "w": 8, "x": 8, "y": 1},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}}
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
       },
       "targets": [
         {
@@ -139,18 +206,45 @@
       "id": 4,
       "title": "Aktive Benutzer",
       "type": "stat",
-      "gridPos": {"h": 4, "w": 8, "x": 16, "y": 1},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "purple", "value": null}]}}
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        }
       },
       "targets": [
         {
@@ -163,16 +257,40 @@
       "id": 5,
       "title": "Anmeldungen über Zeit",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 5},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
-        "legend": {"calcs": ["sum"], "displayMode": "list", "placement": "bottom"},
-        "tooltip": {"mode": "single", "sort": "none"}
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "fieldConfig": {
         "defaults": {
-          "custom": {"drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1, "spanNulls": false},
-          "color": {"mode": "palette-classic"}
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
         }
       },
       "targets": [
@@ -186,19 +304,37 @@
       "id": 6,
       "title": "Top-Clients",
       "type": "barchart",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
         "barWidth": 0.7,
         "fillOpacity": 80,
         "gradientMode": "none",
-        "legend": {"displayMode": "list", "placement": "bottom"},
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
         "orientation": "horizontal",
-        "tooltip": {"mode": "single", "sort": "none"},
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
         "xTickLabelRotation": 0
       },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "palette-classic"}}
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
       },
       "targets": [
         {
@@ -211,13 +347,33 @@
       "id": 7,
       "title": "Anmeldegründe",
       "type": "piechart",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "options": {
-        "displayLabels": ["percent"],
-        "legend": {"displayMode": "table", "placement": "right", "values": ["value", "percent"]},
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
         "pieType": "pie",
-        "tooltip": {"mode": "single", "sort": "none"}
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "targets": [
         {
@@ -231,27 +387,51 @@
       "title": "Sicherheit",
       "type": "row",
       "collapsed": false,
-      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
       "panels": []
     },
     {
       "id": 9,
       "title": "Anmeldungen nach Tageszeit (Stunde)",
       "type": "barchart",
-      "gridPos": {"h": 8, "w": 14, "x": 0, "y": 22},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "description": "Anzahl Logins pro Stunde des Tages (0–23). Zeigt Aktivitätsmuster und Ausreißer.",
       "options": {
         "barWidth": 0.9,
         "fillOpacity": 70,
         "gradientMode": "none",
-        "legend": {"displayMode": "hidden", "placement": "bottom"},
+        "legend": {
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
         "orientation": "vertical",
-        "tooltip": {"mode": "single", "sort": "none"},
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
         "xTickLabelRotation": 0
       },
       "fieldConfig": {
-        "defaults": {"color": {"fixedColor": "blue", "mode": "fixed"}}
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          }
+        }
       },
       "targets": [
         {
@@ -264,26 +444,51 @@
       "id": 10,
       "title": "Außerhalb Geschäftszeiten",
       "type": "stat",
-      "gridPos": {"h": 4, "w": 5, "x": 14, "y": 22},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 22
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "description": "Logins vor 07:00 oder nach 19:00 Uhr.",
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 10}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
             ]
           }
         }
@@ -299,26 +504,51 @@
       "id": 11,
       "title": "Logins ohne Grund",
       "type": "stat",
-      "gridPos": {"h": 4, "w": 5, "x": 19, "y": 22},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 22
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "description": "Login-Events ohne gesetzten Auswahlgrund.",
       "options": {
         "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["sum"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "auto"
       },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              {"color": "green", "value": null},
-              {"color": "yellow", "value": 1},
-              {"color": "red", "value": 5}
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
             ]
           }
         }
@@ -334,17 +564,41 @@
       "id": 12,
       "title": "Login vs. Logout",
       "type": "timeseries",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 30},
-      "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "loginlogbook-influxdb"
+      },
       "description": "Logins und Logouts überlagert im Zeitverlauf.",
       "options": {
-        "legend": {"calcs": ["sum"], "displayMode": "list", "placement": "bottom"},
-        "tooltip": {"mode": "multi", "sort": "none"}
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
       },
       "fieldConfig": {
         "defaults": {
-          "custom": {"drawStyle": "bars", "fillOpacity": 50, "lineWidth": 1, "spanNulls": false},
-          "color": {"mode": "palette-classic"}
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 50,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
         }
       },
       "targets": [
