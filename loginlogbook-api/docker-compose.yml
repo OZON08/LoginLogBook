@@ -27,7 +27,7 @@ services:
       - internal
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.0
     restart: unless-stopped
     depends_on:
       - influxdb
