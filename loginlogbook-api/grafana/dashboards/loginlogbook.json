@@ -58,7 +58,7 @@
         "sort": 1,
         "refresh": 2,
         "hide": 0,
-        "current": {}
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]}
       },
       {
         "name": "os_user",
@@ -76,7 +76,7 @@
         "sort": 1,
         "refresh": 2,
         "hide": 0,
-        "current": {}
+        "current": {"selected": true, "text": ["All"], "value": ["$__all"]}
       }
     ]
   },
