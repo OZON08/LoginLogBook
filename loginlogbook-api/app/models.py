@@ -75,3 +75,9 @@ class BrandingConfig(BaseModel):
 
     logo_height: int = Field(default=120, ge=40, le=300)
     logo_bg: str = Field(default="#1E293B", pattern=r"^#[0-9A-Fa-f]{6}$")
+
+
+class LanguageSetting(BaseModel):
+    """Global language setting."""
+
+    language: str = Field(default="de", pattern=r"^[a-z]{2}$")
