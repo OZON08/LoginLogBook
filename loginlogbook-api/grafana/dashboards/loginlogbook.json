@@ -141,7 +141,8 @@
                 "value": null
               }
             ]
-          }
+          },
+          "noValue": "0"
         }
       },
       "targets": [
@@ -431,7 +432,8 @@
           "mode": "single",
           "sort": "none"
         },
-        "xTickLabelRotation": 0
+        "xTickLabelRotation": 0,
+        "xField": "Stunde"
       },
       "fieldConfig": {
         "defaults": {
@@ -445,6 +447,17 @@
         {
           "refId": "A",
           "query": "import \"date\"\nfrom(bucket: \"logins\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"login_events\" and r.event_type == \"login\")\n  |> filter(fn: (r) => r.host =~ /^${host:regex}$/)\n  |> filter(fn: (r) => r.os_user =~ /^${os_user:regex}$/)\n  |> map(fn: (r) => ({hour: date.hour(t: r._time), val: 1}))\n  |> group(columns: [\"hour\"])\n  |> count(column: \"val\")\n  |> group()\n  |> sort(columns: [\"hour\"])\n  |> map(fn: (r) => ({Stunde: string(v: r.hour), Anmeldungen: r.val}))\n  |> keep(columns: [\"Stunde\", \"Anmeldungen\"])"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Stunde": 0,
+              "Anmeldungen": 1
+            }
+          }
         }
       ]
     },
@@ -498,7 +511,8 @@
                 "value": 10
               }
             ]
-          }
+          },
+          "noValue": "0"
         }
       },
       "targets": [
@@ -558,7 +572,8 @@
                 "value": 5
               }
             ]
-          }
+          },
+          "noValue": "0"
         }
       },
       "targets": [
