@@ -431,8 +431,7 @@
           "mode": "single",
           "sort": "none"
         },
-        "xTickLabelRotation": 0,
-        "xField": "Stunde"
+        "xTickLabelRotation": 0
       },
       "fieldConfig": {
         "defaults": {
