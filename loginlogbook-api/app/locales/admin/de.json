@@ -1,0 +1,21 @@
+{
+  "admin.title": "LoginLogBook Admin",
+  "admin.login.token": "Admin-Token",
+  "admin.login.invalid": "Ungültiges Token",
+  "admin.login.submit": "Anmelden",
+  "admin.logout": "Abmelden",
+  "admin.tab.clients": "Clients",
+  "admin.tab.reasons": "Auswahlgründe",
+  "admin.tab.branding": "Branding",
+  "admin.clients.create": "Anlegen",
+  "admin.clients.duplicate": "Name bereits vergeben",
+  "admin.clients.name": "Name",
+  "admin.clients.freetext": "Freitext",
+  "admin.branding.nologo": "Kein Logo gesetzt",
+  "admin.branding.upload": "Hochladen",
+  "admin.branding.formats": "Erlaubte Formate: PNG, SVG · Max. 2 MB",
+  "admin.branding.render": "Darstellung im Client",
+  "admin.branding.logoheight": "Logo-Höhe (px)",
+  "admin.branding.logobg": "Logo-Hintergrund",
+  "admin.language": "Sprache"
+}
