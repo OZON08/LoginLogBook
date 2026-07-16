@@ -46,3 +46,8 @@ class BrandingConfig(BaseModel):
     @property
     def safe_logo_bg(self) -> str:
         return self.logo_bg if _HEX_COLOR.match(self.logo_bg) else "#1E293B"
+
+
+class LanguageSetting(BaseModel):
+    language: str = "de"
+    available: list[str] = []

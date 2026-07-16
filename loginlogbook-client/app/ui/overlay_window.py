@@ -10,7 +10,14 @@ from app.api_client import ApiClient
 from app.cache import CacheStore
 from app.config import Settings
 from app.event_queue import EventQueue
-from app.models import AppConfig, BrandingConfig, EventIn, EventOut, Reason
+from app.models import (
+    AppConfig,
+    BrandingConfig,
+    EventIn,
+    EventOut,
+    LanguageSetting,
+    Reason,
+)
 from app.ui.card_widget import CardWidget
 from app.ui.confirm_dialog import ConfirmDialog
 from app.ui.styles import COLORS, STYLESHEET
@@ -23,6 +30,7 @@ class _DataLoader(QThread):
     logo_loaded = pyqtSignal(bytes, str)     # data, content_type
     config_loaded = pyqtSignal(object)       # AppConfig
     branding_loaded = pyqtSignal(object)     # BrandingConfig
+    settings_loaded = pyqtSignal(object)     # LanguageSetting
     events_loaded = pyqtSignal(list)         # list[EventOut]
     finished_online = pyqtSignal()
     finished_offline = pyqtSignal()
@@ -60,6 +68,12 @@ class _DataLoader(QThread):
             pass
 
         try:
+            settings = self._client.get_settings()
+            self.settings_loaded.emit(settings)
+        except Exception:
+            pass
+
+        try:
             events = self._client.get_recent_events(self._host, self._days)
             self.events_loaded.emit(events)
         except Exception:
@@ -73,6 +87,7 @@ class _DataLoader(QThread):
 
 class OverlayWindow(QMainWindow):
     login_completed = pyqtSignal()
+    language_changed = pyqtSignal(str)
 
     def __init__(self, settings: Settings) -> None:
         super().__init__()
@@ -147,6 +162,7 @@ class OverlayWindow(QMainWindow):
         self._loader.logo_loaded.connect(self._on_logo)
         self._loader.config_loaded.connect(self._on_config)
         self._loader.branding_loaded.connect(self._on_branding)
+        self._loader.settings_loaded.connect(self._on_settings)
         self._loader.events_loaded.connect(self._on_events)
         self._loader.finished_online.connect(
             lambda: self._card.footer.set_status(online=True)
@@ -193,6 +209,12 @@ class OverlayWindow(QMainWindow):
         if not cfg.allow_free_text:
             self._card.free_text.clear()
         self._cache.save_config(cfg)
+
+    def _on_settings(self, s: LanguageSetting) -> None:
+        from app import i18n  # noqa: PLC0415
+
+        i18n.set_language(s.language)
+        self.language_changed.emit(s.language)
 
     def _on_events(self, events: list[EventOut]) -> None:
         self._card.recent_table.populate(events, self._recent_days)
