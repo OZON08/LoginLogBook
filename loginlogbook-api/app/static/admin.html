@@ -297,11 +297,11 @@ td:last-child { text-align: right; }
   <div id="tab-reasons" class="hidden">
     <div class="add-row">
       <input type="text" id="reason-label" placeholder="Bezeichnung des Grundes" data-i18n-attr="placeholder:admin.reasons.placeholder">
-      <button type="button" id="add-reason-btn" class="btn-primary">Hinzufügen</button>
+      <button type="button" id="add-reason-btn" class="btn-primary" data-i18n="admin.reasons.add">Hinzufügen</button>
     </div>
-    <p id="reason-error" class="error hidden">Bezeichnung darf nicht leer sein</p>
+    <p id="reason-error" class="error hidden" data-i18n="admin.reasons.error.empty">Bezeichnung darf nicht leer sein</p>
     <table>
-      <thead><tr><th>Bezeichnung</th><th></th></tr></thead>
+      <thead><tr><th data-i18n="admin.reasons.header">Bezeichnung</th><th></th></tr></thead>
       <tbody id="reasons-body"></tbody>
     </table>
   </div>
@@ -706,7 +706,7 @@ reasonLabelInput.addEventListener('keydown', (e) => {
 });
 
 async function deleteReason(id, label) {
-  if (!confirm(`Auswahlgrund "${label}" wirklich löschen?`)) return;
+  if (!confirm(t('admin.reasons.confirmdelete').replace('{label}', label))) return;
   let res;
   try {
     res = await fetch(`/reasons/${encodeURIComponent(id)}`, {

@@ -28,5 +28,9 @@
   "admin.branding.render": "Darstellung im Client",
   "admin.branding.logoheight": "Logo-Höhe (px)",
   "admin.branding.logobg": "Logo-Hintergrund",
-  "admin.language": "Sprache"
+  "admin.language": "Sprache",
+  "admin.reasons.add": "Hinzufügen",
+  "admin.reasons.header": "Bezeichnung",
+  "admin.reasons.error.empty": "Bezeichnung darf nicht leer sein",
+  "admin.reasons.confirmdelete": "Auswahlgrund \"{label}\" wirklich löschen?"
 }

@@ -28,5 +28,9 @@
   "admin.branding.render": "Client appearance",
   "admin.branding.logoheight": "Logo height (px)",
   "admin.branding.logobg": "Logo background",
-  "admin.language": "Language"
+  "admin.language": "Language",
+  "admin.reasons.add": "Add",
+  "admin.reasons.header": "Label",
+  "admin.reasons.error.empty": "Label must not be empty",
+  "admin.reasons.confirmdelete": "Delete reason \"{label}\"?"
 }
