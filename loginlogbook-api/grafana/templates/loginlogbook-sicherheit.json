@@ -101,7 +101,7 @@
         "type": "influxdb",
         "uid": "loginlogbook-influxdb"
       },
-      "description": "Anzahl Logins pro Stunde des Tages (0–23). Zeigt Aktivitätsmuster und Ausreißer.",
+      "description": "@@grafana.sicher.byhour.desc@@",
       "options": {
         "displayMode": "gradient",
         "orientation": "horizontal",
@@ -143,7 +143,7 @@
         "type": "influxdb",
         "uid": "loginlogbook-influxdb"
       },
-      "description": "Logins vor 07:00 oder ab 17:00 Uhr (Geschäftszeiten 07–17 Uhr).",
+      "description": "@@grafana.sicher.offhours.desc@@",
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -204,7 +204,7 @@
         "type": "influxdb",
         "uid": "loginlogbook-influxdb"
       },
-      "description": "Login-Events ohne gesetzten Auswahlgrund.",
+      "description": "@@grafana.sicher.noreason.desc@@",
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -265,7 +265,7 @@
         "type": "influxdb",
         "uid": "loginlogbook-influxdb"
       },
-      "description": "Logins und Logouts überlagert im Zeitverlauf.",
+      "description": "@@grafana.sicher.loginlogout.desc@@",
       "options": {
         "legend": {
           "calcs": [

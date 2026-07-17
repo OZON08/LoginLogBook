@@ -279,7 +279,7 @@
           "color": {
             "mode": "palette-classic"
           },
-          "displayName": "Anmeldungen"
+          "displayName": "@@grafana.betrieb.serieslabel@@"
         }
       },
       "targets": [

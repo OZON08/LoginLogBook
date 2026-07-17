@@ -17,5 +17,10 @@
   "grafana.col.client": "Client",
   "grafana.col.user": "Benutzer",
   "grafana.col.type": "Typ",
-  "grafana.col.reason": "Grund"
+  "grafana.col.reason": "Grund",
+  "grafana.sicher.byhour.desc": "Anzahl Logins pro Stunde des Tages (0–23). Zeigt Aktivitätsmuster und Ausreißer.",
+  "grafana.sicher.offhours.desc": "Logins vor 07:00 oder ab 17:00 Uhr (Geschäftszeiten 07–17 Uhr).",
+  "grafana.sicher.noreason.desc": "Login-Events ohne gesetzten Auswahlgrund.",
+  "grafana.sicher.loginlogout.desc": "Logins und Logouts überlagert im Zeitverlauf.",
+  "grafana.betrieb.serieslabel": "Anmeldungen"
 }

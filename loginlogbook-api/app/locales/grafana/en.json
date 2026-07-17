@@ -17,5 +17,10 @@
   "grafana.col.client": "Client",
   "grafana.col.user": "User",
   "grafana.col.type": "Type",
-  "grafana.col.reason": "Reason"
+  "grafana.col.reason": "Reason",
+  "grafana.sicher.byhour.desc": "Number of logins per hour of day (0–23). Shows activity patterns and outliers.",
+  "grafana.sicher.offhours.desc": "Logins before 07:00 or from 17:00 (business hours 07–17).",
+  "grafana.sicher.noreason.desc": "Login events without a selected reason.",
+  "grafana.sicher.loginlogout.desc": "Logins and logouts overlaid over time.",
+  "grafana.betrieb.serieslabel": "Logins"
 }
