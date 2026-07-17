@@ -7,35 +7,44 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from app.i18n import t
+
 
 class ConfirmDialog(QDialog):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Abmelden bestätigen")
-        self.setAccessibleName("Abmelden bestätigen")
         self.setModal(True)
         self.setMinimumWidth(360)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
 
-        title = QLabel("<b>Wirklich abmelden?</b>", self)
-        title.setAccessibleName("Wirklich abmelden?")
+        self._title = QLabel("<b>Wirklich abmelden?</b>", self)
 
-        body = QLabel("Es wird kein Anmeldungsgrund erfasst.", self)
+        self._body = QLabel(self)
 
         buttons = QDialogButtonBox(self)
-        btn_cancel = QPushButton("Abbrechen", self)
-        btn_cancel.setDefault(True)
-        btn_confirm = QPushButton("Abmelden", self)
-        btn_confirm.setObjectName("btn_abmelden")
-        btn_confirm.setAccessibleName("Abmelden bestätigen")
+        self._btn_cancel = QPushButton(self)
+        self._btn_cancel.setDefault(True)
+        self._btn_confirm = QPushButton(self)
+        self._btn_confirm.setObjectName("btn_abmelden")
 
-        buttons.addButton(btn_cancel, QDialogButtonBox.ButtonRole.RejectRole)
-        buttons.addButton(btn_confirm, QDialogButtonBox.ButtonRole.AcceptRole)
+        buttons.addButton(self._btn_cancel, QDialogButtonBox.ButtonRole.RejectRole)
+        buttons.addButton(self._btn_confirm, QDialogButtonBox.ButtonRole.AcceptRole)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
-        layout.addWidget(title)
-        layout.addWidget(body)
+        layout.addWidget(self._title)
+        layout.addWidget(self._body)
         layout.addWidget(buttons)
+
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self.setWindowTitle(t("client.confirm.logout.title"))
+        self.setAccessibleName(t("client.confirm.logout.title"))
+        self._title.setAccessibleName("Wirklich abmelden?")
+        self._body.setText(t("client.freetext.none"))
+        self._btn_cancel.setText(t("client.confirm.cancel"))
+        self._btn_confirm.setText(t("client.button.logout"))
+        self._btn_confirm.setAccessibleName(t("client.confirm.logout.title"))

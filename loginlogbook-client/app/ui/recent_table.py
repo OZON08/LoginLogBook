@@ -11,19 +11,18 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.i18n import t
 from app.models import EventOut
 from app.ui.skeleton import SkeletonWidget
 from app.ui.styles import COLORS
 
 
 class RecentTable(QWidget):
-    _HEADERS = ["Datum / Uhrzeit", "Benutzer", "Grund"]
-
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setAccessibleName("Letzte Anmeldungen")
+        self._days = 0
 
-        self._header_label = QLabel("Letzte Anmeldungen", self)
+        self._header_label = QLabel(self)
         self._header_label.setStyleSheet(
             "font-size: 16px; font-weight: 600;"
         )
@@ -35,7 +34,6 @@ class RecentTable(QWidget):
 
         self._table = QTableWidget(0, 3, self)
         self._table.setObjectName("recent_table")
-        self._table.setHorizontalHeaderLabels(self._HEADERS)
         self._table.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeMode.ResizeToContents
         )
@@ -48,9 +46,8 @@ class RecentTable(QWidget):
         self._table.verticalHeader().setVisible(False)
         self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self._table.setAccessibleName("Tabelle der letzten Anmeldungen")
 
-        self._empty_label = QLabel("Keine Anmeldungen in diesem Zeitraum", self)
+        self._empty_label = QLabel(self)
         self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._empty_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 13px;")
         self._empty_label.setVisible(False)
@@ -66,13 +63,30 @@ class RecentTable(QWidget):
 
         self.setVisible(True)
         self.set_loading(True)
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self.setAccessibleName(t("client.recent.title"))
+        self._header_label.setText(t("client.recent.title"))
+        self._table.setHorizontalHeaderLabels(
+            [
+                t("client.recent.col.datetime"),
+                t("client.recent.col.user"),
+                t("client.reason.label"),
+            ]
+        )
+        self._table.setAccessibleName(t("client.recent.table.a11y"))
+        self._empty_label.setText(t("client.recent.empty"))
+        if self._days:
+            self._days_label.setText(t("client.recent.days", days=self._days))
 
     def set_loading(self, loading: bool) -> None:
         self._skeleton.setVisible(loading)
         self._table.setVisible(not loading)
 
     def populate(self, events: list[EventOut], days: int) -> None:
-        self._days_label.setText(f"Letzte {days} Tage")
+        self._days = days
+        self._days_label.setText(t("client.recent.days", days=days))
         self._table.setRowCount(0)
         self.set_loading(False)
 

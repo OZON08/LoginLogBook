@@ -7,13 +7,13 @@ _HEX_COLOR = re.compile(r"^#[0-9A-Fa-f]{6}$")
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
+from app.i18n import t
 from app.ui.skeleton import SkeletonWidget
 
 
 class LogoWidget(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
-        self.setAccessibleName("Firmenlogo")
         self.setMaximumHeight(320)
 
         self._skeleton = SkeletonWidget(self)
@@ -38,6 +38,11 @@ class LogoWidget(QWidget):
         layout.addWidget(self._skeleton, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self._image_label)
         layout.addWidget(self._fallback_label)
+
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self.setAccessibleName(t("client.logo.a11y"))
 
     def set_loading(self, loading: bool) -> None:
         self._skeleton.setVisible(loading)

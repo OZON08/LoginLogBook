@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from app.i18n import t
 from app.ui.button_row import ButtonRow
 from app.ui.footer_bar import FooterBar
 from app.ui.logo_widget import LogoWidget
@@ -32,8 +33,6 @@ class CardWidget(QWidget):
         self.reason_list = ReasonList(self)
         self.free_text = QLineEdit(self)
         self.free_text.setObjectName("free_text_input")
-        self.free_text.setPlaceholderText("Freitext eingeben …")
-        self.free_text.setAccessibleName("Freitext-Eingabe")
         self.button_row = ButtonRow(self)
         self.recent_table = RecentTable(self)
         self.footer = FooterBar(self)
@@ -81,6 +80,12 @@ class CardWidget(QWidget):
         outer.addWidget(self.footer)
 
         self._apply_card_style()
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self.logo.retranslate()
+        self.free_text.setPlaceholderText(t("client.freetext.placeholder"))
+        self.free_text.setAccessibleName(t("client.freetext.label"))
 
     def _apply_card_style(self) -> None:
         self.setGraphicsEffect(self._make_shadow())

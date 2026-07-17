@@ -2,6 +2,8 @@
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QWidget
 
+from app.i18n import t
+
 
 class SearchField(QWidget):
     filter_changed = pyqtSignal(str)
@@ -15,15 +17,19 @@ class SearchField(QWidget):
 
         self._input = QLineEdit(self)
         self._input.setObjectName("search_field")
-        self._input.setPlaceholderText("Grund suchen…")
         self._input.textChanged.connect(self._debounce.start)
-        self._input.setAccessibleName("Anmeldegrund suchen")
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._input)
 
         self._input.installEventFilter(self)
+
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self._input.setPlaceholderText(t("client.reason.search.placeholder"))
+        self._input.setAccessibleName(t("client.reason.search"))
 
     def eventFilter(self, obj, event) -> bool:
         from PyQt6.QtCore import QEvent

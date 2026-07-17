@@ -2,6 +2,7 @@
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
+from app.i18n import t
 from app.models import Reason
 
 
@@ -13,12 +14,16 @@ class ReasonList(QWidget):
         self._reasons: list[Reason] = []
         self._list = QListWidget(self)
         self._list.setObjectName("reason_list")
-        self._list.setAccessibleName("Anmeldegrund auswählen")
         self._list.itemSelectionChanged.connect(self._on_selection_changed)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self._list)
+
+        self.retranslate()
+
+    def retranslate(self) -> None:
+        self._list.setAccessibleName(t("client.reason.select"))
 
     def populate(self, reasons: list[Reason]) -> None:
         self._reasons = [r for r in reasons if r.active]

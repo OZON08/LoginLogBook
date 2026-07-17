@@ -133,8 +133,17 @@ class OverlayWindow(QMainWindow):
         self._card.free_text.textChanged.connect(self._on_free_text_changed)
         self._card.button_row.anmelden_clicked.connect(self._on_anmelden)
         self._card.button_row.abmelden_clicked.connect(self._on_abmelden)
+        self.language_changed.connect(lambda _code: self._retranslate_all())
 
         self._populate_from_cache()
+
+    def _retranslate_all(self) -> None:
+        self._card.retranslate()
+        self._card.button_row.retranslate()
+        self._card.reason_list.retranslate()
+        self._card.search.retranslate()
+        self._card.recent_table.retranslate()
+        self._card.footer.retranslate()
 
     def showEvent(self, event) -> None:
         super().showEvent(event)
