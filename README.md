@@ -15,15 +15,19 @@ On logout, the user can optionally confirm via a dialog before the session is te
 ## Architecture
 
 ```
-PyQt6 Client  ──HTTPS──►  FastAPI (loginlogbook-api)  ──►  InfluxDB
-(per host)                  │
-                            └── nginx (TLS termination)
+PyQt6 Client  ──HTTPS──►  ┌─ nginx (TLS) ─┐
+(per host)                │   /       ──►  FastAPI (loginlogbook-api) ──► InfluxDB
+                          │   /admin  ──►  Admin web UI (served by the API)
+                          │   /grafana──►  Grafana (dashboards)        ──► InfluxDB
+                          └───────────────┘
 ```
 
 - **Client** — fullscreen PyQt6 overlay, runs on each managed host
-- **API** — FastAPI backend, authenticated with per-host tokens
+- **API** — FastAPI backend, authenticated with per-host tokens; also serves the admin web UI
+- **Admin UI** — browser UI at `/admin` for managing client tokens, login reasons, branding (logo/colours) and the interface language
+- **Grafana** — provisioned dashboards at `/grafana` (Betrieb, Sicherheit, Protokoll) reading login events from InfluxDB
 - **InfluxDB** — time-series storage for login events (not exposed externally)
-- **nginx** — TLS termination, HTTP→HTTPS redirect, security headers
+- **nginx** — TLS termination, HTTP→HTTPS redirect, security headers, reverse proxy for the API and Grafana
 
 ## Requirements
 
@@ -75,6 +79,8 @@ CLIENT_TOKEN=your-unique-host-token
 API_CA_BUNDLE=/etc/ssl/certs/internal-ca.crt
 ```
 
+Client tokens are issued and revoked in the admin UI (see below); each host gets its own.
+
 ## Autostart (Linux)
 
 Copy the desktop file to the system autostart directory:
@@ -89,6 +95,31 @@ Or for a single user:
 cp autostart/loginlogbook-client.desktop ~/.config/autostart/
 ```
 
+## Admin UI
+
+A browser interface at `https://llb.example.com/admin` (admin-token protected) manages:
+
+- **Clients** — create and revoke per-host client tokens
+- **Reasons** — the selectable login reasons shown in the overlay
+- **Branding** — upload a logo and set its size and background colour
+- **Language** — switch the interface language (see below)
+
+The admin token is sent via the `X-Admin-Token` header and is never stored in the browser's `localStorage`.
+
+## Dashboards (Grafana)
+
+Grafana is provisioned automatically and reachable at `https://llb.example.com/grafana`. Three dashboards visualise the login events:
+
+- **Betrieb** — totals, active clients/users, logins over time, top clients, login reasons
+- **Sicherheit** — logins by hour of day, out-of-hours logins (outside 07–17), logins without a reason, login vs. logout
+- **Protokoll** — a filterable table of every login/logout event
+
+The InfluxDB datasource and dashboards are provisioned from files; no manual setup is needed after `docker compose up`.
+
+## Languages (i18n)
+
+The interface ships in **German (default)** and **English**. The active language is a server-side setting, switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; adding a language means copying `de.json` to `xx.json` per component and translating it — it then appears automatically in the admin language switcher. See `CLAUDE.md` for the full procedure.
+
 ## Offline behaviour
 
 If the API is unreachable, the client:
@@ -102,13 +133,24 @@ The client targets **BITV 2.0** (= WCAG 2.1 AA + EN 301 549), as required by Rhe
 
 ## Development
 
+The repository uses [uv](https://docs.astral.sh/uv/). Each component has its own environment:
+
 ```bash
+# Client (PyQt6)
 cd loginlogbook-client
-pip install ".[dev]"
-pytest
+uv run pytest        # 57 tests, run headless (pytest-qt, no display needed)
+
+# API (FastAPI)
+cd loginlogbook-api
+uv run pytest        # 82 tests
 ```
 
-All 51 tests run without a display (headless pytest-qt).
+Regenerate the Grafana dashboards after changing their templates or locales:
+
+```bash
+cd loginlogbook-api
+uv run python -m scripts.build_dashboards --lang de
+```
 
 ## Support
 
