@@ -118,7 +118,9 @@ The InfluxDB datasource and dashboards are provisioned from files; no manual set
 
 ## Languages (i18n)
 
-The interface ships in **German (default)** and **English**. The active language is a server-side setting, switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; adding a language means copying `de.json` to `xx.json` per component and translating it — it then appears automatically in the admin language switcher. See `CLAUDE.md` for the full procedure.
+The interface ships in **German (default)** and **English**. The active language is a server-side setting, switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; adding a language means copying `de.json` to `xx.json` per component and translating it — it then appears automatically in the admin language switcher.
+
+The Grafana dashboards (titles, labels, tooltips) are also translated, but at build time: run `uv run python -m scripts.build_dashboards --lang <code>` and restart Grafana. See `CLAUDE.md` for the full procedure.
 
 ## Offline behaviour
 
