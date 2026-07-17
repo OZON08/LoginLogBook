@@ -10,6 +10,7 @@
   "client.freetext.placeholder": "Freitext eingeben …",
   "client.freetext.none": "Es wird kein Anmeldungsgrund erfasst.",
   "client.confirm.logout.title": "Abmelden bestätigen",
+  "client.confirm.logout.question": "Wirklich abmelden?",
   "client.confirm.cancel": "Abbrechen",
   "client.recent.title": "Letzte Anmeldungen",
   "client.recent.empty": "Keine Anmeldungen in diesem Zeitraum",
@@ -20,6 +21,9 @@
   "client.recent.table.a11y": "Tabelle der letzten Anmeldungen",
   "client.footer.online": "Online",
   "client.footer.offline": "Offline – Cache",
+  "client.footer.status.online": "Verbindungsstatus: Online",
+  "client.footer.status.offline": "Verbindungsstatus: Offline, zwischengespeicherte Daten",
   "client.footer.user.a11y": "Angemeldeter Benutzer und Hostname",
-  "client.logo.a11y": "Firmenlogo"
+  "client.logo.a11y": "Firmenlogo",
+  "client.freetext.or": "— oder —"
 }

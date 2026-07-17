@@ -54,11 +54,11 @@ class FooterBar(QWidget):
         if online:
             dot = f'<span style="color:{COLORS["status_online"]};">●</span>'
             text = f"{dot} {t('client.footer.online')}"
-            accessible = "Verbindungsstatus: Online"
+            accessible = t("client.footer.status.online")
         else:
             dot = f'<span style="color:{COLORS["status_offline"]};">●</span>'
             text = f"{dot} {t('client.footer.offline')}"
-            accessible = "Verbindungsstatus: Offline, zwischengespeicherte Daten"
+            accessible = t("client.footer.status.offline")
         self._status_label.setText(text)
         self._status_label.setTextFormat(Qt.TextFormat.RichText)
         self._status_label.setAccessibleName(accessible)

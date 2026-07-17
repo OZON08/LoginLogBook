@@ -10,6 +10,7 @@
   "client.freetext.placeholder": "Enter free text …",
   "client.freetext.none": "No login reason will be recorded.",
   "client.confirm.logout.title": "Confirm sign out",
+  "client.confirm.logout.question": "Really sign out?",
   "client.confirm.cancel": "Cancel",
   "client.recent.title": "Recent logins",
   "client.recent.empty": "No logins in this period",
@@ -20,6 +21,9 @@
   "client.recent.table.a11y": "Table of recent logins",
   "client.footer.online": "Online",
   "client.footer.offline": "Offline – cache",
+  "client.footer.status.online": "Connection status: online",
+  "client.footer.status.offline": "Connection status: offline, cached data",
   "client.footer.user.a11y": "Signed-in user and hostname",
-  "client.logo.a11y": "Company logo"
+  "client.logo.a11y": "Company logo",
+  "client.freetext.or": "— or —"
 }

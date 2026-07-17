@@ -251,7 +251,7 @@ td:last-child { text-align: right; }
   <!-- Clients tab -->
   <div id="tab-clients">
     <div class="add-row">
-      <input type="text" id="client-name" placeholder="Name des Clients" data-i18n-attr="placeholder:admin.clients.name">
+      <input type="text" id="client-name" placeholder="Name des Clients" data-i18n-attr="placeholder:admin.clients.nameplaceholder">
       <button type="button" id="create-btn" class="btn-primary" data-i18n="admin.clients.create">Anlegen</button>
     </div>
     <p id="name-error" class="error hidden" data-i18n="admin.clients.duplicate">Name bereits vergeben</p>
@@ -296,7 +296,7 @@ td:last-child { text-align: right; }
   <!-- Reasons tab -->
   <div id="tab-reasons" class="hidden">
     <div class="add-row">
-      <input type="text" id="reason-label" placeholder="Bezeichnung des Grundes">
+      <input type="text" id="reason-label" placeholder="Bezeichnung des Grundes" data-i18n-attr="placeholder:admin.reasons.placeholder">
       <button type="button" id="add-reason-btn" class="btn-primary">Hinzufügen</button>
     </div>
     <p id="reason-error" class="error hidden">Bezeichnung darf nicht leer sein</p>
@@ -312,8 +312,8 @@ td:last-child { text-align: right; }
 <!-- Token dialog -->
 <div id="token-dialog" class="dialog-overlay hidden">
   <div class="card">
-    <h2>Client angelegt</h2>
-    <p>Dieses Token wird nur einmal angezeigt. Bitte jetzt kopieren.</p>
+    <h2 data-i18n="admin.clients.created">Client angelegt</h2>
+    <p data-i18n="admin.clients.tokenonce">Dieses Token wird nur einmal angezeigt. Bitte jetzt kopieren.</p>
     <div class="token-row">
       <code id="token-display"></code>
       <button id="copy-inline-btn" title="Kopieren">⎘</button>
@@ -421,9 +421,9 @@ loginForm.addEventListener('submit', async (e) => {
   const token = document.getElementById('token-input').value;
   let res;
   try { res = await fetch('/clients', { headers: { 'X-Admin-Token': token } }); }
-  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  catch { alert(t('admin.error.connection')); return; }
   if (res.status === 403) { loginError.classList.remove('hidden'); return; }
-  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (!res.ok) { alert(t('admin.error.connection')); return; }
   adminToken = token;
   sessionStorage.setItem('adminToken', token);
   loginError.classList.add('hidden');
@@ -465,13 +465,13 @@ async function showMain() {
 async function loadClients() {
   let res;
   try { res = await fetch('/clients', { headers: { 'X-Admin-Token': adminToken } }); }
-  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  catch { alert(t('admin.error.connection')); return; }
   if (res.status === 403) { handleUnauth(); return; }
-  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (!res.ok) { alert(t('admin.error.connection')); return; }
   const clients = await res.json();
   clientsBody.innerHTML = '';
   if (clients.length === 0) {
-    clientsBody.innerHTML = '<tr class="empty-row"><td colspan="3">Keine Clients vorhanden</td></tr>';
+    clientsBody.innerHTML = `<tr class="empty-row"><td colspan="3">${t('admin.clients.empty')}</td></tr>`;
     return;
   }
   for (const c of clients) {
@@ -525,9 +525,9 @@ createBtn.addEventListener('click', async () => {
       headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, token }),
     });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  } catch { alert(t('admin.error.connection')); return; }
   if (res.status === 409) { nameError.classList.remove('hidden'); return; }
-  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (!res.ok) { alert(t('admin.error.connection')); return; }
   clientNameInput.value = '';
   tokenDisplay.textContent = token;
   tokenDialog.classList.remove('hidden');
@@ -541,7 +541,7 @@ async function toggleFreeText(name, allow) {
       headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ allow_free_text: allow }),
     });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); await loadClients(); }
+  } catch { alert(t('admin.error.connection')); await loadClients(); }
 }
 
 async function revokeClient(name) {
@@ -552,9 +552,9 @@ async function revokeClient(name) {
       method: 'DELETE',
       headers: { 'X-Admin-Token': adminToken },
     });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  } catch { alert(t('admin.error.connection')); return; }
   if (res.status === 204 || res.status === 404) { await loadClients(); return; }
-  alert('Verbindung fehlgeschlagen, bitte erneut versuchen');
+  alert(t('admin.error.connection'));
 }
 
 // ── Token dialog ──────────────────────────────────────────────────────────────
@@ -627,8 +627,8 @@ document.getElementById('save-branding-btn').addEventListener('click', async () 
       headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ logo_height, logo_bg }),
     });
-    if (!res.ok) { err.textContent = 'Speichern fehlgeschlagen.'; err.classList.remove('hidden'); }
-  } catch { err.textContent = 'Verbindung fehlgeschlagen.'; err.classList.remove('hidden'); }
+    if (!res.ok) { err.textContent = t('admin.error.save'); err.classList.remove('hidden'); }
+  } catch { err.textContent = t('admin.error.connection.short'); err.classList.remove('hidden'); }
 });
 
 document.getElementById('upload-logo-btn').addEventListener('click', async () => {
@@ -648,8 +648,8 @@ document.getElementById('upload-logo-btn').addEventListener('click', async () =>
   let res;
   try {
     res = await fetch('/branding/logo', { method: 'PUT', headers: { 'X-Admin-Token': adminToken }, body });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
-  if (!res.ok) { logoError.textContent = 'Upload fehlgeschlagen.'; logoError.classList.remove('hidden'); return; }
+  } catch { alert(t('admin.error.connection')); return; }
+  if (!res.ok) { logoError.textContent = t('admin.error.upload'); logoError.classList.remove('hidden'); return; }
   fileInput.value = '';
   await loadBranding();
 });
@@ -659,13 +659,13 @@ document.getElementById('upload-logo-btn').addEventListener('click', async () =>
 async function loadReasons() {
   let res;
   try { res = await fetch('/reasons', { headers: { 'X-Admin-Token': adminToken } }); }
-  catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  catch { alert(t('admin.error.connection')); return; }
   if (res.status === 403) { handleUnauth(); return; }
-  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  if (!res.ok) { alert(t('admin.error.connection')); return; }
   const reasons = await res.json();
   reasonsBody.innerHTML = '';
   if (reasons.length === 0) {
-    reasonsBody.innerHTML = '<tr class="empty-row"><td colspan="2">Keine Auswahlgründe vorhanden</td></tr>';
+    reasonsBody.innerHTML = `<tr class="empty-row"><td colspan="2">${t('admin.reasons.empty')}</td></tr>`;
     return;
   }
   for (const r of reasons) {
@@ -675,7 +675,7 @@ async function loadReasons() {
     const actionTd = document.createElement('td');
     const btn = document.createElement('button');
     btn.className = 'btn-danger';
-    btn.textContent = 'Löschen';
+    btn.textContent = t('admin.action.delete');
     btn.addEventListener('click', () => deleteReason(r.id, r.label));
     actionTd.appendChild(btn);
     tr.appendChild(labelTd);
@@ -695,8 +695,8 @@ addReasonBtn.addEventListener('click', async () => {
       headers: { 'X-Admin-Token': adminToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ label }),
     });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
-  if (!res.ok) { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  } catch { alert(t('admin.error.connection')); return; }
+  if (!res.ok) { alert(t('admin.error.connection')); return; }
   reasonLabelInput.value = '';
   await loadReasons();
 });
@@ -713,9 +713,9 @@ async function deleteReason(id, label) {
       method: 'DELETE',
       headers: { 'X-Admin-Token': adminToken },
     });
-  } catch { alert('Verbindung fehlgeschlagen, bitte erneut versuchen'); return; }
+  } catch { alert(t('admin.error.connection')); return; }
   if (res.status === 204 || res.status === 404) { await loadReasons(); return; }
-  alert('Verbindung fehlgeschlagen, bitte erneut versuchen');
+  alert(t('admin.error.connection'));
 }
 </script>
 </body>

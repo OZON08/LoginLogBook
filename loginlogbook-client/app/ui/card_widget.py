@@ -37,7 +37,7 @@ class CardWidget(QWidget):
         self.recent_table = RecentTable(self)
         self.footer = FooterBar(self)
 
-        self.or_label = QLabel("— oder —", self)
+        self.or_label = QLabel(self)
         self.or_label.setStyleSheet(f"color: {COLORS['muted']}; font-size: 12px;")
         self.or_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -84,6 +84,7 @@ class CardWidget(QWidget):
 
     def retranslate(self) -> None:
         self.logo.retranslate()
+        self.or_label.setText(t("client.freetext.or"))
         self.free_text.setPlaceholderText(t("client.freetext.placeholder"))
         self.free_text.setAccessibleName(t("client.freetext.label"))
 

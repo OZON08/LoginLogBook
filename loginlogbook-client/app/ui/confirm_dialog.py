@@ -19,7 +19,7 @@ class ConfirmDialog(QDialog):
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
 
-        self._title = QLabel("<b>Wirklich abmelden?</b>", self)
+        self._title = QLabel(self)
 
         self._body = QLabel(self)
 
@@ -43,7 +43,8 @@ class ConfirmDialog(QDialog):
     def retranslate(self) -> None:
         self.setWindowTitle(t("client.confirm.logout.title"))
         self.setAccessibleName(t("client.confirm.logout.title"))
-        self._title.setAccessibleName("Wirklich abmelden?")
+        self._title.setText(f"<b>{t('client.confirm.logout.question')}</b>")
+        self._title.setAccessibleName(t("client.confirm.logout.question"))
         self._body.setText(t("client.freetext.none"))
         self._btn_cancel.setText(t("client.confirm.cancel"))
         self._btn_confirm.setText(t("client.button.logout"))
