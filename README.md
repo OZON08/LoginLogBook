@@ -118,9 +118,23 @@ The InfluxDB datasource and dashboards are provisioned from files; no manual set
 
 ## Languages (i18n)
 
-The interface ships in **German (default)** and **English**. The active language is a server-side setting, switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; adding a language means copying `de.json` to `xx.json` per component and translating it — it then appears automatically in the admin language switcher.
+The interface ships in **German (default)** and **English**. The active language is a server-side setting (`/data/settings.json`), switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; key parity across languages is enforced by tests (`test_locale_parity.py`).
 
-The Grafana dashboards (titles, labels, tooltips) are also translated, but at build time: run `uv run python -m scripts.build_dashboards --lang <code>` and restart Grafana. See `CLAUDE.md` for the full procedure.
+**Adding a language `xx`:**
+
+1. Copy `de.json` to `xx.json` and translate it in each locale directory:
+   - `loginlogbook-client/app/locales/`
+   - `loginlogbook-api/app/locales/admin/`
+   - `loginlogbook-api/app/locales/api/`
+   - `loginlogbook-api/app/locales/grafana/`
+2. Client, admin UI and API are done — `xx` appears automatically in the admin language switcher.
+3. Grafana dashboards are translated at **build time** (they are static provisioned JSON, not switched live). Regenerate and restart:
+   ```bash
+   cd loginlogbook-api
+   uv run python -m scripts.build_dashboards --lang xx
+   docker compose restart grafana
+   ```
+   The generator fills the dashboard titles, panel labels, and description tooltips from `locales/grafana/xx.json`.
 
 ## Offline behaviour
 

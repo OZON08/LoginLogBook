@@ -10,9 +10,6 @@ Rules:
 
 ## Sprachen (i18n)
 
-Feste UI-Texte liegen in JSON-Locale-Dateien. Aktive Sprache = serverseitig (`/data/settings.json`), umschaltbar in der Admin-UI. Neue Sprache `xx`:
-1. `xx.json` je Verzeichnis aus `de.json` kopieren und übersetzen: `loginlogbook-client/app/locales/`, `loginlogbook-api/app/locales/{admin,api,grafana}/`.
-2. Client/Admin/API: fertig (`xx` erscheint automatisch im Admin-Umschalter).
-3. Grafana: `uv run python -m scripts.build_dashboards --lang xx` + `docker compose restart grafana`.
+Feste UI-Texte liegen in JSON-Locale-Dateien. Aktive Sprache = serverseitig (`/data/settings.json`), umschaltbar in der Admin-UI. Key-Parität (jede Sprachdatei hat dieselben Keys wie `de.json`) wird per Test erzwungen (`test_locale_parity.py` in beiden Komponenten).
 
-Key-Parität (jede Sprachdatei hat dieselben Keys wie `de.json`) wird per Test erzwungen (`test_locale_parity.py` in beiden Komponenten).
+Anleitung zum Hinzufügen einer Sprache (inkl. Grafana): siehe README.md, Abschnitt „Languages (i18n)".
