@@ -1,0 +1,21 @@
+{
+  "grafana.betrieb.dashtitle": "LoginLogBook – Operations",
+  "grafana.betrieb.total": "Total logins",
+  "grafana.betrieb.clients": "Active clients",
+  "grafana.betrieb.users": "Active users",
+  "grafana.betrieb.overtime": "Logins over time",
+  "grafana.betrieb.topclients": "Top clients",
+  "grafana.betrieb.reasons": "Login reasons",
+  "grafana.sicher.dashtitle": "LoginLogBook – Security",
+  "grafana.sicher.byhour": "Logins by time of day (hour)",
+  "grafana.sicher.offhours": "Outside business hours",
+  "grafana.sicher.noreason": "Logins without reason",
+  "grafana.sicher.loginlogout": "Login vs. logout",
+  "grafana.proto.dashtitle": "LoginLogBook – Log",
+  "grafana.proto.table": "All logins",
+  "grafana.col.time": "Time",
+  "grafana.col.client": "Client",
+  "grafana.col.user": "User",
+  "grafana.col.type": "Type",
+  "grafana.col.reason": "Reason"
+}
