@@ -20,3 +20,10 @@ def test_render_missing_key_raises(tmp_path: Path):
     import pytest
     with pytest.raises(KeyError):
         render_dashboard(template, {})
+
+
+def test_render_escapes_special_characters(tmp_path: Path):
+    # A translation containing " or \ must not corrupt the JSON output.
+    template = {"title": "@@k@@"}
+    out = render_dashboard(template, {"k": 'A "quoted" \\ value'})
+    assert out["title"] == 'A "quoted" \\ value'

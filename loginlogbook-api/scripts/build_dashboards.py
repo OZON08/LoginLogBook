@@ -19,7 +19,9 @@ _PLACEHOLDER = re.compile(r"@@([a-z0-9._]+)@@")
 
 def render_dashboard(template: dict, locale: dict) -> dict:
     def sub(m: re.Match) -> str:
-        return locale[m.group(1)]  # KeyError on missing key = fail loud
+        # KeyError on missing key = fail loud. Escape for the JSON string
+        # context so a value with " or \ cannot corrupt the output.
+        return json.dumps(locale[m.group(1)], ensure_ascii=False)[1:-1]
     text = _PLACEHOLDER.sub(sub, json.dumps(template, ensure_ascii=False))
     return json.loads(text)
 
