@@ -49,3 +49,8 @@ def test_get_admin_locale(client: TestClient):
 
 def test_get_admin_locale_rejects_bad_code(client: TestClient):
     assert client.get("/locales/admin/../secrets.json").status_code == 404
+
+
+def test_get_admin_locale_missing_returns_404(client: TestClient):
+    # Valid two-letter code, but no such locale file exists.
+    assert client.get("/locales/admin/fr.json").status_code == 404

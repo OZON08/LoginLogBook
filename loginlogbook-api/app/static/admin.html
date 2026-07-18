@@ -390,11 +390,18 @@ async function initI18n() {
   await loadLocale(s.language);
   applyTranslations();
   sel.addEventListener('change', async () => {
-    await fetch('/settings', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
-      body: JSON.stringify({ language: sel.value }),
-    });
+    const previous = s.language;
+    let res;
+    try {
+      res = await fetch('/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken },
+        body: JSON.stringify({ language: sel.value }),
+      });
+    } catch { alert(t('admin.error.connection')); sel.value = previous; return; }
+    if (res.status === 403) { handleUnauth(); return; }
+    if (!res.ok) { alert(t('admin.error.save')); sel.value = previous; return; }
+    s.language = sel.value;
     await loadLocale(sel.value);
     applyTranslations();
   });

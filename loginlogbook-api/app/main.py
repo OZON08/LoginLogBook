@@ -26,25 +26,34 @@ _DEFAULT_LOGO = _STATIC_DIR / "loginlogbook-logo.svg"
 _ADMIN_LOCALES_DIR = Path(__file__).parent / "locales" / "admin"
 
 
-def get_reasons_store() -> ReasonsStore:
-    return ReasonsStore(get_settings().reasons_file)
+def get_reasons_store(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ReasonsStore:
+    return ReasonsStore(settings.reasons_file)
 
 
-def get_influx_gateway() -> InfluxGateway:
-    return InfluxGateway(get_settings())
+def get_influx_gateway(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> InfluxGateway:
+    return InfluxGateway(settings)
 
 
-def get_logo_store() -> LogoStore:
-    settings = get_settings()
+def get_logo_store(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> LogoStore:
     return LogoStore(settings.logo_dir, settings.logo_max_bytes)
 
 
-def get_client_store() -> ClientStore:
-    return ClientStore(get_settings().clients_file)
+def get_client_store(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ClientStore:
+    return ClientStore(settings.clients_file)
 
 
-def get_branding_store() -> BrandingStore:
-    return BrandingStore(get_settings().branding_file)
+def get_branding_store(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> BrandingStore:
+    return BrandingStore(settings.branding_file)
 
 
 def get_settings_store(

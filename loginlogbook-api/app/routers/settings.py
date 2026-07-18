@@ -1,5 +1,4 @@
 """Global settings (language) and admin-UI locale distribution."""
-import json
 import re
 from pathlib import Path
 from typing import Annotated
