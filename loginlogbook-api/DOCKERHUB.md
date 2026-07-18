@@ -6,12 +6,12 @@ Fullscreen login overlay for Windows and Linux — records why users log into se
 
 When a user logs into a server, the LoginLogBook client displays a fullscreen overlay that blocks the desktop until a login reason is selected. The reason is recorded along with timestamp, hostname, and OS user.
 
-This image is the **API backend**: a FastAPI service that stores login events in InfluxDB and serves reasons, branding, and client configuration.
+This image is the **API backend**: a FastAPI service that stores login events in InfluxDB, serves reasons, branding and client configuration, and hosts a browser **admin UI** at `/admin` (manage client tokens, reasons, branding and the interface language). The full stack adds **Grafana dashboards** at `/grafana` (operations, security, audit log). The interface is available in **German (default) and English**, switchable in the admin UI.
 
 ```
-PyQt6 Client  ──HTTPS──►  loginlogbook-api  ──►  InfluxDB
-(per host)                       │
-                              nginx (TLS)
+PyQt6 Client ─HTTPS─► nginx (TLS) ─┬─ /        ─► loginlogbook-api ─► InfluxDB
+(per host)                         ├─ /admin    ─► admin web UI (this image)
+                                   └─ /grafana  ─► Grafana dashboards ─► InfluxDB
 ```
 
 ## Quick start
@@ -41,6 +41,7 @@ docker compose up -d
 | `REASONS_FILE` | no | Path to reasons JSON (default: `/data/reasons.json`) |
 | `LOGO_DIR` | no | Path to logo directory (default: `/data/logo`) |
 | `CLIENTS_FILE` | no | Path to client store JSON (default: `/data/clients.json`) |
+| `SETTINGS_FILE` | no | Path to app settings JSON — holds the active language (default: `/data/settings.json`) |
 
 ## Tags
 
