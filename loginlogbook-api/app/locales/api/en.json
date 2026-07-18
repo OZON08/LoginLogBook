@@ -1,4 +1,17 @@
 {
   "error.logo.none": "No logo set",
-  "error.language.invalid": "Unknown language code"
+  "error.language.invalid": "Unknown language code",
+  "error.page.403.title": "Access denied",
+  "error.page.403.msg": "The provided token is invalid or missing.",
+  "error.page.404.title": "Page not found",
+  "error.page.404.msg": "The requested resource does not exist.",
+  "error.page.405.title": "Method not allowed",
+  "error.page.405.msg": "This HTTP method is not supported here.",
+  "error.page.422.title": "Invalid request",
+  "error.page.422.msg": "The request contains invalid or missing fields.",
+  "error.page.500.title": "Internal error",
+  "error.page.500.msg": "An unexpected error occurred. Please try again later.",
+  "error.page.generic.title": "Error",
+  "error.page.generic.msg": "An unknown error occurred.",
+  "error.page.back": "← Back to overview"
 }

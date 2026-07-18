@@ -1,4 +1,17 @@
 {
   "error.logo.none": "Kein Logo gesetzt",
-  "error.language.invalid": "Unbekannter Sprachcode"
+  "error.language.invalid": "Unbekannter Sprachcode",
+  "error.page.403.title": "Zugriff verweigert",
+  "error.page.403.msg": "Das angegebene Token ist ungültig oder fehlt.",
+  "error.page.404.title": "Seite nicht gefunden",
+  "error.page.404.msg": "Die angeforderte Ressource existiert nicht.",
+  "error.page.405.title": "Methode nicht erlaubt",
+  "error.page.405.msg": "Diese HTTP-Methode wird hier nicht unterstützt.",
+  "error.page.422.title": "Ungültige Anfrage",
+  "error.page.422.msg": "Die Anfrage enthält ungültige oder fehlende Felder.",
+  "error.page.500.title": "Interner Fehler",
+  "error.page.500.msg": "Ein unerwarteter Fehler ist aufgetreten. Bitte später erneut versuchen.",
+  "error.page.generic.title": "Fehler",
+  "error.page.generic.msg": "Ein unbekannter Fehler ist aufgetreten.",
+  "error.page.back": "← Zur Übersicht"
 }
