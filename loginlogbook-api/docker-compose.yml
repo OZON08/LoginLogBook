@@ -32,7 +32,7 @@ services:
     depends_on:
       - influxdb
     environment:
-      GF_SERVER_ROOT_URL: "https://example.com/grafana/"
+      GF_SERVER_ROOT_URL: "https://${TLS_DOMAIN}/grafana/"
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
@@ -46,12 +46,27 @@ services:
     networks:
       - internal
 
+  certs-init:
+    image: alpine/openssl:3.5.7
+    env_file: .env
+    entrypoint: /bin/sh
+    command: -c "/scripts/certs-init.sh"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:rw
+      - ./scripts:/scripts:ro
+    networks:
+      - internal
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
-      - api
-      - grafana
+      certs-init:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+      grafana:
+        condition: service_started
     ports:
       - "80:80"
       - "443:443"
