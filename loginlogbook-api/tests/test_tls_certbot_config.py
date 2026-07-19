@@ -39,3 +39,12 @@ def test_certs_init_script_executable():
     script = _SCRIPTS / "certs-init.sh"
     assert script.exists()
     assert os.access(script, os.X_OK)
+
+
+def test_acme_location_before_https_redirect():
+    conf = _NGINX_CONF.read_text(encoding="utf-8")
+    acme = conf.find("/.well-known/acme-challenge/")
+    redirect = conf.find("return 301 https://")
+    assert acme != -1, "ACME challenge location missing"
+    assert redirect != -1, "HTTPS redirect missing"
+    assert acme < redirect, "ACME location must come before the HTTPS redirect"

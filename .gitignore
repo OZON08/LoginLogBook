@@ -42,6 +42,7 @@ build/
 *.pem
 *.crt
 nginx/certs/
+nginx/certbot-webroot/
 docker-compose.dev.yml
 
 # Editor
