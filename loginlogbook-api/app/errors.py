@@ -77,8 +77,8 @@ body {{
   box-shadow: 0 24px 64px rgba(0,0,0,0.4);
   text-align: center;
 }}
-.logo {{ height: 56px; margin-bottom: 1.25rem; }}
-.code {{ font-size: 4rem; font-weight: 800; color: #E2E8F0; line-height: 1; margin-bottom: 0.75rem; }}
+.logo {{ height: 96px; margin-bottom: 1.25rem; }}
+.code {{ font-size: 4.5rem; font-weight: 800; color: #0F172A; line-height: 1; margin-bottom: 0.75rem; }}
 h1 {{ font-size: 1.25rem; font-weight: 700; color: #0F172A; margin-bottom: 0.75rem; }}
 p {{ font-size: 0.9375rem; color: #475569; margin-bottom: 1.75rem; line-height: 1.6; }}
 a {{ display: inline-block; background: #2563EB; color: #fff; text-decoration: none;
@@ -92,7 +92,7 @@ a:hover {{ background: #1D4ED8; }}
   <div class="code">{code}</div>
   <h1>{title}</h1>
   <p>{message}</p>
-  <a href="/admin">{back}</a>
+  <a href="#" onclick="history.back();return false;">{back}</a>
 </div>
 </body>
 </html>"""

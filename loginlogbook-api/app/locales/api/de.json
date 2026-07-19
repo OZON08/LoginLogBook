@@ -13,5 +13,5 @@
   "error.page.500.msg": "Ein unerwarteter Fehler ist aufgetreten. Bitte später erneut versuchen.",
   "error.page.generic.title": "Fehler",
   "error.page.generic.msg": "Ein unbekannter Fehler ist aufgetreten.",
-  "error.page.back": "← Zur Übersicht"
+  "error.page.back": "← Zurück"
 }
