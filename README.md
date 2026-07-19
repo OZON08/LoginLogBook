@@ -116,6 +116,41 @@ Grafana is provisioned automatically and reachable at `https://llb.example.com/g
 
 The InfluxDB datasource and dashboards are provisioned from files; no manual setup is needed after `docker compose up`.
 
+## HTTPS & Zertifikate
+
+LoginLogBook terminiert TLS in nginx und liest immer genau ein Zertifikatspaar:
+`nginx/certs/server.crt` und `nginx/certs/server.key`.
+
+### Standard: Self-Signed (intern)
+
+Beim ersten `docker compose up -d` erzeugt der `certs-init`-Container ein
+selbstsigniertes Zertifikat (CN = `TLS_DOMAIN`), falls noch keins existiert.
+nginx startet damit sofort über HTTPS. Browser zeigen eine Zertifikatswarnung –
+für interne Deployments erwartet und in Ordnung. Ein vorhandenes Zertifikat wird
+nie überschrieben.
+
+### Optional: Let's Encrypt (öffentliche Domain)
+
+Voraussetzungen: öffentliche Domain, DNS zeigt auf den Host, Ports 80/443
+erreichbar. In `.env` `TLS_DOMAIN` und `CERTBOT_EMAIL` setzen, dann:
+
+```bash
+docker compose --profile certbot up -d       # certbot-Dienst starten
+./scripts/init-letsencrypt.sh                 # einmalig ausstellen (+ --staging zum Testen)
+```
+
+Der certbot-Container erneuert danach automatisch (alle 12 h Prüfung, Erneuerung
+ab 30 Tagen Restlaufzeit) und kopiert das Zertifikat per deploy-hook in den
+nginx-Cert-Pfad. nginx lädt sich alle 6 h selbst neu, um erneuerte Zertifikate
+einzulesen.
+
+### Manueller Smoke-Test
+
+1. Frischer Host, ohne certbot: `docker compose up -d` → `https://<host>`
+   liefert eine Seite mit Zertifikatswarnung (Self-Signed).
+2. Mit Domain + certbot: nach `init-letsencrypt.sh` liefert `https://$TLS_DOMAIN`
+   ein browservertrautes Zertifikat ohne Warnung.
+
 ## Languages (i18n)
 
 The interface ships in **German (default)** and **English**. The active language is a server-side setting (`/data/settings.json`), switched in the admin UI, and applies to the client, admin UI and API. Fixed UI texts live in JSON locale files; key parity across languages is enforced by tests (`test_locale_parity.py`).

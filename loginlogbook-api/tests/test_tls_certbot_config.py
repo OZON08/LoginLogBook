@@ -117,3 +117,23 @@ def test_compose_config_shows_certbot_with_profile():
     assert r.returncode == 0, r.stderr
     cfg = yaml.safe_load(r.stdout)
     assert "certbot" in cfg["services"]
+
+
+def test_env_example_has_certbot_email():
+    assert "CERTBOT_EMAIL" in _ENV_EXAMPLE.read_text(encoding="utf-8")
+
+
+def test_init_letsencrypt_executable_and_complete():
+    script = _SCRIPTS / "init-letsencrypt.sh"
+    assert script.exists()
+    assert os.access(script, os.X_OK)
+    body = script.read_text(encoding="utf-8")
+    assert "certonly" in body
+    assert "--webroot" in body
+    assert "--deploy-hook" in body
+    assert "--staging" in body
+
+
+def test_readme_documents_https():
+    readme = (_ROOT.parent / "README.md").read_text(encoding="utf-8")
+    assert "HTTPS & Zertifikate" in readme
