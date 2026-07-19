@@ -1,4 +1,5 @@
 """Structural configuration tests for TLS bootstrap + optional certbot."""
+import contextlib
 import os
 import shutil
 import subprocess
@@ -48,3 +49,71 @@ def test_acme_location_before_https_redirect():
     assert acme != -1, "ACME challenge location missing"
     assert redirect != -1, "HTTPS redirect missing"
     assert acme < redirect, "ACME location must come before the HTTPS redirect"
+
+
+def _has_docker() -> bool:
+    return shutil.which("docker") is not None
+
+
+@contextlib.contextmanager
+def _ensure_env():
+    """`docker compose config` needs the env_file (.env) to exist. Create a
+    throwaway one from .env.example when the repo has no local .env."""
+    env_path = _ROOT / ".env"
+    created = False
+    if not env_path.exists():
+        env_path.write_text(_ENV_EXAMPLE.read_text(encoding="utf-8"), encoding="utf-8")
+        created = True
+    try:
+        yield
+    finally:
+        if created:
+            env_path.unlink()
+
+
+def test_certbot_service_profile_gated():
+    assert _services()["certbot"]["profiles"] == ["certbot"]
+
+
+def test_certbot_image_pinned():
+    assert _services()["certbot"]["image"] == "certbot/certbot:v5.7.0"
+
+
+def test_deploy_hook_script_executable():
+    script = _SCRIPTS / "deploy-hook.sh"
+    assert script.exists()
+    assert os.access(script, os.X_OK)
+
+
+def test_nginx_has_reload_loop():
+    assert "nginx -s reload" in _services()["nginx"]["command"]
+
+
+def test_letsencrypt_named_volume():
+    assert "letsencrypt" in _compose()["volumes"]
+
+
+@pytest.mark.skipif(not _has_docker(), reason="docker not available")
+def test_compose_config_hides_certbot_without_profile():
+    env = {**os.environ, "TLS_DOMAIN": "example.com", "CERTBOT_EMAIL": "a@b.c"}
+    with _ensure_env():
+        r = subprocess.run(
+            ["docker", "compose", "-f", str(_COMPOSE), "config"],
+            capture_output=True, text=True, cwd=_ROOT, env=env,
+        )
+    assert r.returncode == 0, r.stderr
+    cfg = yaml.safe_load(r.stdout)
+    assert "certbot" not in cfg["services"]
+
+
+@pytest.mark.skipif(not _has_docker(), reason="docker not available")
+def test_compose_config_shows_certbot_with_profile():
+    env = {**os.environ, "TLS_DOMAIN": "example.com", "CERTBOT_EMAIL": "a@b.c"}
+    with _ensure_env():
+        r = subprocess.run(
+            ["docker", "compose", "-f", str(_COMPOSE), "--profile", "certbot", "config"],
+            capture_output=True, text=True, cwd=_ROOT, env=env,
+        )
+    assert r.returncode == 0, r.stderr
+    cfg = yaml.safe_load(r.stdout)
+    assert "certbot" in cfg["services"]
