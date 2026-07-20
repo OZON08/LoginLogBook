@@ -136,4 +136,4 @@ def test_init_letsencrypt_executable_and_complete():
 
 def test_readme_documents_https():
     readme = (_ROOT.parent / "README.md").read_text(encoding="utf-8")
-    assert "HTTPS & Zertifikate" in readme
+    assert "HTTPS & certificates" in readme

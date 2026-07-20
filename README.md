@@ -116,40 +116,137 @@ Grafana is provisioned automatically and reachable at `https://llb.example.com/g
 
 The InfluxDB datasource and dashboards are provisioned from files; no manual setup is needed after `docker compose up`.
 
-## HTTPS & Zertifikate
+## Server deployment (loginlogbook-api)
 
-LoginLogBook terminiert TLS in nginx und liest immer genau ein Zertifikatspaar:
-`nginx/certs/server.crt` und `nginx/certs/server.key`.
+The server side runs as a Docker Compose stack in `loginlogbook-api/`: nginx (TLS
+termination + reverse proxy), the FastAPI API, InfluxDB (time-series storage),
+Grafana (dashboards), a one-shot `certs-init` container, and an optional `certbot`
+container. Only nginx is published to the host — on ports **80** (HTTP → HTTPS
+redirect + ACME challenge) and **443** (HTTPS). Everything else talks over the
+internal Docker network.
 
-### Standard: Self-Signed (intern)
-
-Beim ersten `docker compose up -d` erzeugt der `certs-init`-Container ein
-selbstsigniertes Zertifikat (CN = `TLS_DOMAIN`), falls noch keins existiert.
-nginx startet damit sofort über HTTPS. Browser zeigen eine Zertifikatswarnung –
-für interne Deployments erwartet und in Ordnung. Ein vorhandenes Zertifikat wird
-nie überschrieben.
-
-### Optional: Let's Encrypt (öffentliche Domain)
-
-Voraussetzungen: öffentliche Domain, DNS zeigt auf den Host, Ports 80/443
-erreichbar. In `.env` `TLS_DOMAIN` und `CERTBOT_EMAIL` setzen, dann:
+### First start
 
 ```bash
-docker compose --profile certbot up -d       # certbot-Dienst starten
-./scripts/init-letsencrypt.sh                 # einmalig ausstellen (+ --staging zum Testen)
+cd loginlogbook-api
+cp .env.example .env          # then fill in the secrets (see the table below)
+docker compose up -d          # brings up nginx, api, influxdb, grafana, certs-init
 ```
 
-Der certbot-Container erneuert danach automatisch (alle 12 h Prüfung, Erneuerung
-ab 30 Tagen Restlaufzeit) und kopiert das Zertifikat per deploy-hook in den
-nginx-Cert-Pfad. nginx lädt sich alle 6 h selbst neu, um erneuerte Zertifikate
-einzulesen.
+On the first `up`, InfluxDB bootstraps itself from the `DOCKER_INFLUXDB_INIT_*`
+variables (org, bucket, admin user/password, admin token). **After the first
+successful start, remove or comment out `DOCKER_INFLUXDB_INIT_MODE` in `.env`** —
+it only drives the one-time setup and InfluxDB refuses to re-run it against an
+initialised volume. The `INFLUX_TOKEN` the API and Grafana use must match
+`DOCKER_INFLUXDB_INIT_ADMIN_TOKEN`.
 
-### Manueller Smoke-Test
+`certs-init` generates a self-signed bootstrap certificate on first start so nginx
+can serve HTTPS immediately (see [HTTPS & certificates](#https--certificates)).
 
-1. Frischer Host, ohne certbot: `docker compose up -d` → `https://<host>`
-   liefert eine Seite mit Zertifikatswarnung (Self-Signed).
-2. Mit Domain + certbot: nach `init-letsencrypt.sh` liefert `https://$TLS_DOMAIN`
-   ein browservertrautes Zertifikat ohne Warnung.
+Update the running stack after pulling new images:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+### Services
+
+| Service | Image | Purpose | Published ports |
+|---|---|---|---|
+| `nginx` | `nginx:1.27-alpine` | TLS termination, HTTP→HTTPS redirect, reverse proxy, error pages, rate limiting | `80`, `443` |
+| `api` | `ozon08/loginlogbook-api:latest` | FastAPI backend + admin UI | internal only |
+| `influxdb` | `influxdb:2.7` | Login-event storage | internal only |
+| `grafana` | `grafana/grafana:13.1.0` | Dashboards at `/grafana` | internal only |
+| `certs-init` | `alpine/openssl:3.5.7` | One-shot self-signed bootstrap cert (never overwrites an existing one) | — |
+| `certbot` | `certbot/certbot:v5.7.0` | Optional Let's Encrypt issuance + auto-renewal (profile `certbot`) | — |
+
+### Server configuration
+
+Server settings are environment variables, provided via `loginlogbook-api/.env`
+(copied from `.env.example`). The API reads them through pydantic settings
+(`app/config.py`); the `DOCKER_INFLUXDB_INIT_*` and `GRAFANA_*` variables are
+consumed by the InfluxDB and Grafana containers respectively.
+
+| Variable | Required | Description |
+|---|---|---|
+| `INFLUX_URL` | yes | InfluxDB base URL (default `http://influxdb:8086`) |
+| `INFLUX_TOKEN` | yes | InfluxDB API token — must equal `DOCKER_INFLUXDB_INIT_ADMIN_TOKEN` |
+| `INFLUX_ORG` | yes | InfluxDB organisation (default `loginlogbook`) |
+| `INFLUX_BUCKET` | yes | InfluxDB bucket for login events (default `logins`) |
+| `ADMIN_TOKEN` | yes | Token for the admin UI and `/clients` / `/reasons` management endpoints (`X-Admin-Token` header) |
+| `CLIENT_TOKEN` | yes | Client token accepted from login overlays (one shared token, or manage per-host tokens via the admin UI) |
+| `REASONS_FILE` | no | Path inside the container for the reasons store (default `/data/reasons.json`) |
+| `LOGO_DIR` | no | Directory for the uploaded branding logo (default `/data/logo`) |
+| `CLIENTS_FILE` | no | Path for the per-host client-token store (default `/data/clients.json`) |
+| `TLS_DOMAIN` | yes | Domain LoginLogBook is reachable under — CN of the self-signed cert, certbot domain, and Grafana root URL |
+| `CERTBOT_EMAIL` | for certbot | E-mail for Let's Encrypt registration and expiry warnings |
+| `DOCKER_INFLUXDB_INIT_MODE` | first start only | Set to `setup` for the first start; **remove afterwards** |
+| `DOCKER_INFLUXDB_INIT_USERNAME` | first start only | InfluxDB admin username created on first start |
+| `DOCKER_INFLUXDB_INIT_PASSWORD` | first start only | InfluxDB admin password created on first start |
+| `DOCKER_INFLUXDB_INIT_ORG` | first start only | InfluxDB org created on first start (match `INFLUX_ORG`) |
+| `DOCKER_INFLUXDB_INIT_BUCKET` | first start only | InfluxDB bucket created on first start (match `INFLUX_BUCKET`) |
+| `DOCKER_INFLUXDB_INIT_ADMIN_TOKEN` | first start only | Admin token created on first start (match `INFLUX_TOKEN`) |
+| `GRAFANA_ADMIN_USER` | yes | Grafana admin username |
+| `GRAFANA_ADMIN_PASSWORD` | yes | Grafana admin password |
+
+Reasons, branding and language are also editable at runtime via the admin UI; the
+`REASONS_FILE` / `LOGO_DIR` / `CLIENTS_FILE` paths point at the persisted
+`api-data` volume so they survive restarts.
+
+## HTTPS & certificates
+
+LoginLogBook terminates TLS in nginx and always reads exactly one certificate
+pair: `nginx/certs/server.crt` and `nginx/certs/server.key`. Whatever produces
+those two files — the self-signed bootstrap or certbot — nginx never needs to
+know.
+
+### Default: self-signed (internal)
+
+On the first `docker compose up -d`, the `certs-init` container generates a
+self-signed certificate (CN = `TLS_DOMAIN`) if none exists yet. nginx serves
+HTTPS with it immediately. Browsers show a certificate warning — expected and
+fine for internal deployments. An existing certificate is never overwritten, so
+certbot-issued certs are safe across restarts.
+
+### Optional: Let's Encrypt (public domain)
+
+Prerequisites: a public domain, DNS pointing at the host, ports 80/443 reachable.
+Set `TLS_DOMAIN` and `CERTBOT_EMAIL` in `.env`, then:
+
+```bash
+docker compose --profile certbot up -d       # start the certbot service
+./scripts/init-letsencrypt.sh                 # issue once (add --staging to test)
+```
+
+Issuance uses the HTTP-01 challenge served from `/.well-known/acme-challenge/`
+(handled before the HTTPS redirect). The certbot container then renews
+automatically (checks every 12 h, renews from 30 days before expiry) and copies
+the renewed certificate into the nginx cert path via its deploy hook. nginx
+reloads itself every 6 h to pick up renewed certificates without a restart.
+
+### Manual smoke test
+
+1. Fresh host, no certbot: `docker compose up -d` → `https://<host>` serves a
+   page with a certificate warning (self-signed).
+2. With a domain + certbot: after `init-letsencrypt.sh`, `https://$TLS_DOMAIN`
+   serves a browser-trusted certificate without a warning.
+
+## Error pages & rate limiting
+
+nginx and the API return branded, localized error responses instead of raw
+server errors.
+
+- **Gateway errors (5xx).** If the API or Grafana is unavailable, nginx serves
+  static branded pages for `502` / `503` / `504` from `nginx/errors/`. The page
+  language follows the browser's `Accept-Language` header (`map $http_accept_language`),
+  falling back to the default language.
+- **API errors.** The API itself returns branded HTML for browser requests and
+  structured JSON for programmatic clients, so the PyQt client and the admin UI
+  both get machine-readable errors while humans get a readable page.
+- **Rate limiting.** nginx caps requests at **60 req/min** per client
+  (`limit_req_zone … rate=60r/m`). Over-limit requests receive a branded **429**
+  page (`limit_req_status 429`) rather than nginx's default, again localized via
+  `Accept-Language`.
 
 ## Languages (i18n)
 
