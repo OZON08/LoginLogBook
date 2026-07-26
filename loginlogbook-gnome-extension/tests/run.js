@@ -8,5 +8,6 @@ import './net.test.js';
 import './i18n.test.js';
 import './locale_parity.test.js';
 import './enforcement.test.js';
+import './helpers.test.js';
 await runAll();
 system.exit(report());
