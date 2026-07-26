@@ -1,5 +1,5 @@
 {
-    "uuid": "loginlogbook@willeke.tv",
+    "uuid": "loginlogbook@ozon08.github.io",
     "name": "LoginLogBook",
     "description": "Enforces a login-reason prompt at GNOME/Wayland session start.",
     "shell-version": ["50"],

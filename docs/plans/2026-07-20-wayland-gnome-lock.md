@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- GNOME Shell 50 / gjs 1.88; ESM extension; `metadata.json` `shell-version: ["50"]`, `uuid: "loginlogbook@willeke.tv"`.
+- GNOME Shell 50 / gjs 1.88; ESM extension; `metadata.json` `shell-version: ["50"]`, `uuid: "loginlogbook@ozon08.github.io"`.
 - Only GJS + `gi://` typelibs (`GObject`, `Gio`, `GLib`, `Soup` 3.0, `St`, `Clutter`, `Shell`, `Meta`); **no npm/external runtime deps**.
 - **Fail-open:** any config error / missing `API_URL` / unexpected `enable()` exception → no grab, log to journal, user gets in normally.
 - Shared env/cache/queue with the PyQt client: read `/etc/loginlogbook.env`; same vars `API_URL`, `CLIENT_TOKEN`, `API_CA_BUNDLE`, `CACHE_DIR`, `QUEUE_FILE`; same defaults `~/.loginlogbook/cache`, `~/.loginlogbook/queue.json`.
@@ -105,7 +105,7 @@ function readJson(rel) {
 }
 
 test('metadata has correct uuid', () => {
-    assertEqual(readJson('metadata.json').uuid, 'loginlogbook@willeke.tv', 'uuid');
+    assertEqual(readJson('metadata.json').uuid, 'loginlogbook@ozon08.github.io', 'uuid');
 });
 test('metadata targets shell 50', () => {
     assertEqual(readJson('metadata.json')['shell-version'], ['50'], 'shell-version');
@@ -130,7 +130,7 @@ Expected: FAIL — `metadata.json` cannot be read (file not found) or JSON parse
 Create `metadata.json`:
 ```json
 {
-    "uuid": "loginlogbook@willeke.tv",
+    "uuid": "loginlogbook@ozon08.github.io",
     "name": "LoginLogBook",
     "description": "Enforces a login-reason prompt at GNOME/Wayland session start.",
     "shell-version": ["50"],
@@ -1439,8 +1439,8 @@ Expected: PASS — all headless tests green (extension.js is not imported by the
 
 Run (uses the packaging script from Task 10 — do Task 10 first, or link manually):
 ```bash
-ln -sfn "$PWD/loginlogbook-gnome-extension" ~/.local/share/gnome-shell/extensions/loginlogbook@willeke.tv
-gnome-extensions enable loginlogbook@willeke.tv
+ln -sfn "$PWD/loginlogbook-gnome-extension" ~/.local/share/gnome-shell/extensions/loginlogbook@ozon08.github.io
+gnome-extensions enable loginlogbook@ozon08.github.io
 ```
 Then log out and back in (Wayland cannot live-reload the shell).
 
@@ -1476,7 +1476,7 @@ git commit -m "feat(gnome-ext): enable/disable orchestration + manual smoke docs
 - Create: `loginlogbook-gnome-extension/packaging/install.test.sh`
 
 **Interfaces:**
-- Produces: `install.sh` copies the extension to `${DESTDIR}/usr/share/gnome-shell/extensions/loginlogbook@willeke.tv/`, writes a dconf default + lock enabling the UUID under `${DESTDIR}/etc/dconf/db/local.d/`, and runs `dconf update` (skipped when `DESTDIR` is set). `DESTDIR` supports offline/testable dry runs. `uninstall.sh` reverses it.
+- Produces: `install.sh` copies the extension to `${DESTDIR}/usr/share/gnome-shell/extensions/loginlogbook@ozon08.github.io/`, writes a dconf default + lock enabling the UUID under `${DESTDIR}/etc/dconf/db/local.d/`, and runs `dconf update` (skipped when `DESTDIR` is set). `DESTDIR` supports offline/testable dry runs. `uninstall.sh` reverses it.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1487,10 +1487,10 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(mktemp -d)"
 DESTDIR="$root" "$here/install.sh"
-ext="$root/usr/share/gnome-shell/extensions/loginlogbook@willeke.tv"
+ext="$root/usr/share/gnome-shell/extensions/loginlogbook@ozon08.github.io"
 test -f "$ext/metadata.json" || { echo "FAIL: metadata not installed"; exit 1; }
 test -f "$ext/extension.js" || { echo "FAIL: extension.js not installed"; exit 1; }
-grep -q "loginlogbook@willeke.tv" "$root/etc/dconf/db/local.d/00-loginlogbook" || { echo "FAIL: dconf default missing"; exit 1; }
+grep -q "loginlogbook@ozon08.github.io" "$root/etc/dconf/db/local.d/00-loginlogbook" || { echo "FAIL: dconf default missing"; exit 1; }
 grep -q "enabled-extensions" "$root/etc/dconf/db/local.d/locks/loginlogbook" || { echo "FAIL: dconf lock missing"; exit 1; }
 echo "PASS"
 ```
@@ -1510,7 +1510,7 @@ Create `packaging/install.sh`:
 # Install the LoginLogBook GNOME extension system-wide and force-enable it via
 # dconf. Set DESTDIR for a staged/dry-run install (skips `dconf update`).
 set -euo pipefail
-UUID="loginlogbook@willeke.tv"
+UUID="loginlogbook@ozon08.github.io"
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
 DESTDIR="${DESTDIR:-}"
 
@@ -1540,7 +1540,7 @@ Create `packaging/uninstall.sh`:
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
-UUID="loginlogbook@willeke.tv"
+UUID="loginlogbook@ozon08.github.io"
 DESTDIR="${DESTDIR:-}"
 rm -rf "${DESTDIR}/usr/share/gnome-shell/extensions/${UUID}"
 rm -f "${DESTDIR}/etc/dconf/db/local.d/00-loginlogbook"

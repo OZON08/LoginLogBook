@@ -9,7 +9,7 @@ function readJson(rel) {
 }
 
 test('metadata has correct uuid', () => {
-    assertEqual(readJson('metadata.json').uuid, 'loginlogbook@willeke.tv', 'uuid');
+    assertEqual(readJson('metadata.json').uuid, 'loginlogbook@ozon08.github.io', 'uuid');
 });
 test('metadata targets shell 50', () => {
     assertEqual(readJson('metadata.json')['shell-version'], ['50'], 'shell-version');

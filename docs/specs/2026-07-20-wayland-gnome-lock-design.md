@@ -47,7 +47,7 @@ und wird zudem nirgends im Client aufgerufen (toter Code).
 ## Architektur & Modul-Layout
 
 Neue Geschwister-Komponente `loginlogbook-gnome-extension/`, UUID
-`loginlogbook@willeke.tv`.
+`loginlogbook@ozon08.github.io`.
 
 ```
 loginlogbook-gnome-extension/
@@ -225,7 +225,7 @@ settings/recent` nachladen, Cache aktualisieren; bei Erfolg Footer online.
 ## Packaging / Installation
 
 `packaging/install.sh` (Basis für den Installer #20):
-- Dateien nach `/usr/share/gnome-shell/extensions/loginlogbook@willeke.tv/`
+- Dateien nach `/usr/share/gnome-shell/extensions/loginlogbook@ozon08.github.io/`
   (System-Extension für alle Nutzer).
 - **Erzwingen per dconf-System-DB:** `enabled-extensions` inkl. UUID in
   `/etc/dconf/db/local.d/` als Default setzen **und** in
@@ -239,7 +239,7 @@ settings/recent` nachladen, Cache aktualisieren; bei Erfolg Footer online.
 ## Globale Constraints
 
 - GNOME Shell 50 / gjs 1.88; ESM-Extension; `metadata.json` `shell-version: ["50"]`,
-  `uuid: "loginlogbook@willeke.tv"`.
+  `uuid: "loginlogbook@ozon08.github.io"`.
 - Nur GJS + `gi://`-Typelibs (`GObject`, `Gio`, `GLib`, `Soup` 3.0, `St`, `Clutter`,
   `Shell`, `Meta`); **keine npm/externen Laufzeit-Deps**.
 - **Fail-open**: jede Config-/Startfehler-Situation lässt den Nutzer rein.
