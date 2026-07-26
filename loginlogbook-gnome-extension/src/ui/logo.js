@@ -15,11 +15,17 @@ export const Logo = GObject.registerClass(class Logo extends St.Bin {
         this.style = `background-color: ${safeLogoBg(branding.logo_bg)}; padding: 16px;`;
         this._img.icon_size = branding.logo_height || 120;
     }
-    // Write bytes to a temp file and load as a file icon (avoids GdkPixbuf dep).
+    // Persist bytes to a per-user cache file (0600) and load as a file icon
+    // (avoids GdkPixbuf dep). We deliberately avoid the shared /tmp with a
+    // predictable name, which would allow a local symlink/clobber attack.
     setLogo({ data }) {
-        const path = GLib.build_filenamev([GLib.get_tmp_dir(), 'llb-logo.bin']);
+        const dir = GLib.build_filenamev([GLib.get_user_cache_dir(), 'loginlogbook']);
+        const dirFile = Gio.File.new_for_path(dir);
+        if (!dirFile.query_exists(null)) dirFile.make_directory_with_parents(null);
+        const path = GLib.build_filenamev([dir, 'logo.bin']);
         Gio.File.new_for_path(path).replace_contents(
-            data, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+            data, null, false,
+            Gio.FileCreateFlags.REPLACE_DESTINATION | Gio.FileCreateFlags.PRIVATE, null);
         this._img.gicon = Gio.FileIcon.new(Gio.File.new_for_path(path));
     }
 });
