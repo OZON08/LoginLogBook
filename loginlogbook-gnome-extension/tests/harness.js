@@ -1,8 +1,14 @@
 // Minimal pure-gjs assert runner. No external deps.
 const _results = [];
+const _pending = [];
 export function test(name, fn) {
-    try { fn(); _results.push([true, name, '']); }
-    catch (e) { _results.push([false, name, String(e && e.message || e)]); }
+    _pending.push([name, fn]);
+}
+export async function runAll() {
+    for (const [name, fn] of _pending) {
+        try { await fn(); _results.push([true, name, '']); }
+        catch (e) { _results.push([false, name, String(e && e.message || e)]); }
+    }
 }
 export function assertEqual(actual, expected, msg = '') {
     const a = JSON.stringify(actual), b = JSON.stringify(expected);
