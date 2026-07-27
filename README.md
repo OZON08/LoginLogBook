@@ -51,6 +51,11 @@ pip install .
 pip install ".[linux]"
 ```
 
+On **X11** the client grabs the keyboard directly. On **Wayland** an application
+window cannot grab global input — only a GNOME Shell extension can — so desktop
+enforcement there is handled by [`loginlogbook-gnome-extension`](loginlogbook-gnome-extension/),
+not the Qt client. The Qt overlay's `setup_fullscreen` is a no-op under Wayland.
+
 ### Build a standalone binary
 
 ```bash

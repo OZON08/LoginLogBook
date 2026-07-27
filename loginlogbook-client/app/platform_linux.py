@@ -40,8 +40,10 @@ def get_hostname() -> str:
 
 
 def setup_fullscreen(window) -> None:
-    if os.environ.get("WAYLAND_DISPLAY"):
-        os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
+    # No-op: input confinement on Wayland is handled by the GNOME Shell
+    # extension (loginlogbook-gnome-extension), not by the Qt client.
+    # On X11 the keyboard grab in lock() applies (see task #18).
+    return
 
 
 def lock(window) -> None:
