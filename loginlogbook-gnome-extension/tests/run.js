@@ -9,5 +9,7 @@ import './i18n.test.js';
 import './locale_parity.test.js';
 import './enforcement.test.js';
 import './helpers.test.js';
+import './stylesheet.test.js';
+import './time.test.js';
 await runAll();
 system.exit(report());

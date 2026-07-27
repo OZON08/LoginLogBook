@@ -8,7 +8,7 @@ DESTDIR="${DESTDIR:-}"
 
 extdir="${DESTDIR}/usr/share/gnome-shell/extensions/${UUID}"
 mkdir -p "$extdir"
-cp -r "$SRC/metadata.json" "$SRC/extension.js" "$SRC/src" "$SRC/locales" "$extdir/"
+cp -r "$SRC/metadata.json" "$SRC/extension.js" "$SRC/stylesheet.css" "$SRC/src" "$SRC/locales" "$extdir/"
 
 dconfdir="${DESTDIR}/etc/dconf/db/local.d"
 mkdir -p "$dconfdir/locks"

@@ -1,0 +1,190 @@
+/* LoginLogBook GNOME Shell extension — overlay theme.
+ * GNOME Shell auto-loads this file from the extension root. Colours and layout
+ * mirror the PyQt client (loginlogbook-client/app/ui/styles.py) so both
+ * surfaces look identical. St uses a lenient CSS parser (libcroco): properties
+ * it does not support are skipped individually, so the rest of a rule still
+ * applies. Property subset: background-color, border(-radius), padding,
+ * spacing, color, font-*, min-width/min-height. */
+
+/* Opaque backdrop per monitor — the scrim that hides the desktop. */
+.llb-cover {
+    background-color: #0F172A;
+}
+.llb-overlay {
+    background-color: transparent;
+}
+
+/* Fixed-width centred card. */
+.llb-card {
+    background-color: #1E293B;
+    border-radius: 12px;
+    padding: 32px;
+    spacing: 24px;
+    min-width: 900px;
+    color: #F1F5F9;
+    font-size: 14px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+/* Logo: background-image sized to natural aspect ratio (see logo.js). */
+.llb-logo {
+    border-radius: 8px;
+}
+.llb-logo-img {
+    /* width/height + background-image set inline per branding. */
+}
+
+/* Two-column body. */
+.llb-columns {
+    spacing: 24px;
+}
+.llb-col-left {
+    spacing: 12px;
+    min-width: 440px;
+}
+.llb-col-right {
+    min-width: 380px;
+}
+.llb-divider {
+    min-width: 1px;
+    background-color: #475569;
+}
+.llb-spacer {
+    /* flexible gap pushing the button row to the bottom of the left column */
+}
+
+/* Search + free-text entries. */
+.llb-search,
+.llb-freetext {
+    border: 1px solid #475569;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 15px;
+    background-color: #1E293B;
+    color: #F1F5F9;
+    min-height: 40px;
+}
+.llb-search:focus,
+.llb-freetext:focus {
+    border: 2px solid #3B82F6;
+}
+
+/* Reason list — one button per reason. */
+.llb-reasons {
+    spacing: 0;
+}
+.llb-reason {
+    padding: 10px 12px;
+    border-bottom: 1px solid #334155;
+    color: #F1F5F9;
+    font-size: 13px;
+}
+.llb-reason:hover {
+    background-color: #273549;
+}
+.llb-reason-selected {
+    background-color: #1D3461;
+    border-left: 3px solid #3B82F6;
+    color: #F1F5F9;
+    font-weight: bold;
+}
+
+.llb-or {
+    color: #94A3B8;
+    font-size: 12px;
+}
+
+/* Action button row: Abmelden (outline) + Anmelden (primary). */
+.llb-buttons {
+    spacing: 12px;
+}
+.llb-submit {
+    background-color: #3B82F6;
+    color: #FFFFFF;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    min-height: 44px;
+    padding: 0 16px;
+}
+.llb-submit:hover {
+    background-color: #2563EB;
+}
+.llb-submit-disabled {
+    background-color: #334155;
+    color: #64748B;
+}
+.llb-logout {
+    background-color: transparent;
+    color: #F87171;
+    border: 1px solid #F87171;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    min-height: 44px;
+    padding: 0 16px;
+}
+.llb-logout:hover {
+    background-color: rgba(248, 113, 113, 0.15);
+}
+
+/* Recent-events table (right column). */
+.llb-recent {
+    spacing: 6px;
+}
+.llb-recent-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #F1F5F9;
+}
+.llb-recent-days {
+    font-size: 13px;
+    color: #94A3B8;
+}
+.llb-recent-rows {
+    spacing: 0;
+}
+.llb-recent-row {
+    spacing: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #334155;
+}
+.llb-recent-cell {
+    font-size: 13px;
+    color: #F1F5F9;
+}
+.llb-recent-empty {
+    color: #94A3B8;
+    font-size: 13px;
+    padding: 12px 0;
+}
+
+/* Footer: user@host · status · version. */
+.llb-footer {
+    spacing: 12px;
+    padding-top: 8px;
+    color: #94A3B8;
+    font-size: 12px;
+}
+.llb-footer-item {
+    color: #94A3B8;
+}
+.llb-footer-license {
+    color: #94A3B8;
+    font-size: 11px;
+}
+.llb-status {
+    color: #94A3B8;
+}
+.llb-status-online {
+    color: #4ADE80;
+}
+.llb-status-offline {
+    color: #FCD34D;
+}
+
+/* Logout confirmation modal. */
+.llb-confirm .modal-dialog-content-box {
+    padding: 12px;
+    spacing: 12px;
+}
