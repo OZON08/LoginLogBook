@@ -10,6 +10,7 @@ import { Translator } from './src/i18n.js';
 import { ModalGuard } from './src/enforcement.js';
 import { Overlay } from './src/ui/overlay.js';
 import { EventIn } from './src/models.js';
+import { nowRfc3339 } from './src/time.js';
 
 export default class LoginLogBookExtension extends Extension {
     enable() {
@@ -34,7 +35,8 @@ export default class LoginLogBookExtension extends Extension {
         this._api = new ApiClient(cfg);
         this._t = new Translator(GLib.build_filenamev([this.path, 'locales']));
 
-        this._overlay = new Overlay(this._t.t.bind(this._t), this.metadata.version || '0', {
+        this._overlay = new Overlay(this._t.t.bind(this._t),
+            this.metadata['version-name'] || String(this.metadata.version || '1'), {
             onSubmit: (label) => this._submit(cfg, host, user, label),
             onLogout: () => this._logout(),
         });
@@ -97,7 +99,7 @@ export default class LoginLogBookExtension extends Extension {
     async _submit(cfg, host, user, label) {
         const evt = EventIn({
             event_type: 'login', host, os_user: user, reason: label,
-            timestamp: GLib.DateTime.new_now_local().format_iso8601(),
+            timestamp: nowRfc3339(),
         });
         try { await this._api.postEvent(evt); }
         catch (e) { logError(e, '[loginlogbook] post failed — queued'); this._queue.enqueue(evt); }

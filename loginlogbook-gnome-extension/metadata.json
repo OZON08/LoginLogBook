@@ -2,6 +2,8 @@
     "uuid": "loginlogbook@ozon08.github.io",
     "name": "LoginLogBook",
     "description": "Enforces a login-reason prompt at GNOME/Wayland session start.",
+    "version": 1,
+    "version-name": "0.1.0",
     "shell-version": ["50"],
     "url": "https://github.com/OZON08/LoginLogBook"
 }
