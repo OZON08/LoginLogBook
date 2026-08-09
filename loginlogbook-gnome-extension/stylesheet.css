@@ -141,6 +141,11 @@
     font-size: 13px;
     color: #94A3B8;
 }
+/* Cap the visible list to ~10 rows (≈31px each) — beyond that the
+ * StScrollView shows a scrollbar so the card never grows off the monitor. */
+.llb-recent-scroll {
+    max-height: 310px;
+}
 .llb-recent-rows {
     spacing: 0;
 }

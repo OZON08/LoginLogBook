@@ -10,9 +10,21 @@ export const RecentTable = GObject.registerClass(class RecentTable extends St.Bo
         this._title = new St.Label({ text: t('client.recent.title'), style_class: 'llb-recent-title' });
         this._daysLabel = new St.Label({ text: '', style_class: 'llb-recent-days' });
         this._rows = new St.BoxLayout({ vertical: true, style_class: 'llb-recent-rows' });
+        // Cap the list to ~10 visible rows (max-height in the stylesheet); any
+        // further events scroll instead of stretching the card off the monitor.
+        this._scroll = new St.ScrollView({ style_class: 'llb-recent-scroll',
+            x_expand: true, y_expand: false });
+        try {
+            this._scroll.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        } catch {
+            this._scroll.hscrollbar_policy = St.PolicyType.NEVER;
+            this._scroll.vscrollbar_policy = St.PolicyType.AUTOMATIC;
+        }
+        if (typeof this._scroll.set_child === 'function') this._scroll.set_child(this._rows);
+        else this._scroll.add_child(this._rows);
         this.add_child(this._title);
         this.add_child(this._daysLabel);
-        this.add_child(this._rows);
+        this.add_child(this._scroll);
     }
     populate(events, days) {
         this._days = days;
