@@ -69,7 +69,12 @@
     border: 2px solid #3B82F6;
 }
 
-/* Reason list — one button per reason. */
+/* Reason list — one button per reason. Cap it to ~10 visible rows (same limit
+ * as .llb-recent-scroll); beyond that the StScrollView shows a scrollbar so the
+ * card never grows off the monitor. */
+.llb-reason-scroll {
+    max-height: 310px;
+}
 .llb-reasons {
     spacing: 0;
 }

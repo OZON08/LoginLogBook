@@ -29,6 +29,19 @@ export const Overlay = GObject.registerClass(class Overlay extends St.Widget {
         this._search = new St.Entry({ hint_text: t('client.reason.search.placeholder'),
             style_class: 'llb-search', x_expand: true });
         this._reasons = new ReasonList();
+        // Cap the reason list to ~10 visible rows (max-height in the stylesheet),
+        // same limit as the recent-events list; beyond that it scrolls instead of
+        // stretching the card off the monitor.
+        this._reasonsScroll = new St.ScrollView({ style_class: 'llb-reason-scroll',
+            x_expand: true, y_expand: false });
+        try {
+            this._reasonsScroll.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        } catch {
+            this._reasonsScroll.hscrollbar_policy = St.PolicyType.NEVER;
+            this._reasonsScroll.vscrollbar_policy = St.PolicyType.AUTOMATIC;
+        }
+        if (typeof this._reasonsScroll.set_child === 'function') this._reasonsScroll.set_child(this._reasons);
+        else this._reasonsScroll.add_child(this._reasons);
         this._orLabel = new St.Label({ text: t('client.freetext.or'), style_class: 'llb-or',
             x_align: Clutter.ActorAlign.CENTER });
         this._freeText = new St.Entry({ hint_text: t('client.freetext.placeholder'),
@@ -44,7 +57,7 @@ export const Overlay = GObject.registerClass(class Overlay extends St.Widget {
 
         const left = new St.BoxLayout({ vertical: true, style_class: 'llb-col-left', x_expand: true });
         left.add_child(this._search);
-        left.add_child(this._reasons);
+        left.add_child(this._reasonsScroll);
         left.add_child(this._orLabel);
         left.add_child(this._freeText);
         left.add_child(new St.Widget({ style_class: 'llb-spacer', y_expand: true }));
